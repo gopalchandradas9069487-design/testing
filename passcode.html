@@ -1,0 +1,2514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Love Lock Screen</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Dancing+Script:wght@500;600;700&family=Abril+Fatface&family=Caveat:wght@400;600&family=Noto+Sans+Devanagari:wght@400;700;900&family=Playfair+Display:ital,wght@0,700;0,900;1,400&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Quicksand', sans-serif; background: #fcfbf9; user-select: none; }
+
+    @keyframes heartbeat {
+      0% { transform: scale(1); } 14% { transform: scale(1.1); }
+      28% { transform: scale(1); } 42% { transform: scale(1.1); } 70% { transform: scale(1); }
+    }
+    .animate-heartbeat { animation: heartbeat 1.5s infinite; }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+    .animate-shake { animation: shake 0.4s ease-in-out; }
+
+    @keyframes floatUp {
+      0% { transform: translateY(0) scale(0.8) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(-120px) scale(1.2) rotate(20deg); opacity: 0; }
+    }
+    .floating-heart { position: absolute; animation: floatUp 1.2s ease-out forwards; pointer-events: none; }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(253,244,245,0.5); }
+    ::-webkit-scrollbar-thumb { background: #fbcfe8; border-radius: 9999px; }
+
+    /* ===== FLIPBOOK ===== */
+    .flipbook-scene {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .flipbook {
+      position: relative;
+      width: min(340px, 92vw);
+      height: min(530px, 72vh);
+      perspective: 1400px;
+    }
+
+    .flipbook-page {
+      position: absolute;
+      inset: 0;
+      border-radius: 1.25rem;
+      overflow: hidden;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      will-change: transform, opacity;
+      opacity: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .flipbook-page.page-current {
+      opacity: 1;
+      z-index: 10;
+      pointer-events: auto;
+      box-shadow: 0 20px 50px rgba(92, 26, 36, 0.25);
+    }
+
+    .flipbook-page.page-next-peek {
+      opacity: 0.6;
+      z-index: 5;
+      transform: rotateY(8deg) scale(0.97) translateX(5px);
+      box-shadow: 0 10px 30px rgba(92, 26, 36, 0.1);
+    }
+
+    /* Spotify cover */
+    .spotify-cover {
+      background: linear-gradient(180deg, #6b2230 0%, #4a1520 55%, #3d1119 100%);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      padding: 1.25rem 1.25rem 1.5rem;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      height: 100%;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+    .spotify-cover__art {
+      width: 100%; aspect-ratio: 1; object-fit: cover;
+      border-radius: 0.75rem; margin-bottom: 0.85rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .spotify-cover__brand-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.65rem; }
+    .spotify-cover__logo { width: 22px; height: 22px; flex-shrink: 0; }
+    .spotify-cover__waveform { display: flex; align-items: flex-end; gap: 2.5px; height: 18px; flex: 1; }
+    .spotify-cover__waveform span { width: 3px; background: #fff; border-radius: 1px; animation: waveBar 1.2s ease-in-out infinite; }
+    .spotify-cover__waveform span:nth-child(1) { height: 6px; animation-delay: 0s; }
+    .spotify-cover__waveform span:nth-child(2) { height: 12px; animation-delay: 0.1s; }
+    .spotify-cover__waveform span:nth-child(3) { height: 8px; animation-delay: 0.2s; }
+    .spotify-cover__waveform span:nth-child(4) { height: 16px; animation-delay: 0.15s; }
+    .spotify-cover__waveform span:nth-child(5) { height: 10px; animation-delay: 0.25s; }
+    .spotify-cover__waveform span:nth-child(6) { height: 14px; animation-delay: 0.05s; }
+    .spotify-cover__waveform span:nth-child(7) { height: 7px; animation-delay: 0.3s; }
+    .spotify-cover__waveform span:nth-child(8) { height: 11px; animation-delay: 0.12s; }
+    .spotify-cover__waveform span:nth-child(9) { height: 9px; animation-delay: 0.22s; }
+    .spotify-cover__waveform span:nth-child(10) { height: 13px; animation-delay: 0.08s; }
+    .spotify-cover__waveform span:nth-child(11) { height: 5px; animation-delay: 0.18s; }
+    .spotify-cover__waveform span:nth-child(12) { height: 15px; animation-delay: 0.28s; }
+    @keyframes waveBar {
+      0%, 100% { transform: scaleY(0.6); opacity: 0.7; }
+      50% { transform: scaleY(1); opacity: 1; }
+    }
+    .spotify-cover__meta { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.85rem; }
+    .spotify-cover__title { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; margin: 0 0 0.2rem; }
+    .spotify-cover__artist { font-size: 0.8rem; font-weight: 400; opacity: 0.88; margin: 0; }
+    .spotify-cover__like { width: 26px; height: 26px; flex-shrink: 0; margin-top: 0.15rem; }
+    .spotify-cover__progress { margin-bottom: 0.35rem; }
+    .spotify-cover__progress-track { height: 3px; background: rgba(255,255,255,0.25); border-radius: 999px; overflow: hidden; margin-bottom: 0.4rem; }
+    .spotify-cover__progress-fill { width: 0%; height: 100%; background: #fff; border-radius: 999px; transition: width 0.5s linear; }
+    .spotify-cover__times { display: flex; justify-content: space-between; font-size: 0.65rem; opacity: 0.85; margin-bottom: 0.85rem; }
+    .spotify-cover__controls { display: flex; align-items: center; justify-content: space-between; padding: 0 0.25rem; }
+    .spotify-cover__controls svg { width: 22px; height: 22px; opacity: 0.95; }
+    .spotify-cover__play { width: 52px; height: 52px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(0,0,0,0.25); }
+    .spotify-cover__play svg { width: 24px; height: 24px; margin-left: 3px; color: #5c1a24; }
+    .spotify-cover__footer { text-align: center; font-family: 'Dancing Script', cursive; font-size: 1.15rem; font-weight: 600; margin-top: 0.75rem; opacity: 0.95; letter-spacing: 0.02em; }
+
+    /* Inner pages */
+    .flipbook-inner {
+      background: linear-gradient(145deg, #fff9fb 0%, #fce7f3 100%);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 2.5rem 1.75rem; text-align: center;
+      border: 1px solid #fbcfe8;
+      height: 100%; box-sizing: border-box;
+    }
+    .flipbook-inner h3 { font-size: 1.65rem; font-weight: 700; color: #be185d; margin-bottom: 0.85rem; }
+    .flipbook-inner p { font-size: 1rem; color: #4b5563; line-height: 1.7; max-width: 270px; }
+    .flipbook-inner .page-emoji { font-size: 3rem; margin-bottom: 1rem; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05)); }
+
+    /* Nav buttons */
+    .flipbook-nav { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+    .flipbook-nav button { padding: 0.6rem 1.5rem; border-radius: 9999px; font-size: 0.85rem; font-weight: 700; transition: all 0.25s; cursor: pointer; }
+    .btn-prev { background: #fdf2f8; color: #be185d; border: 1px solid #fbcfe8; }
+    .btn-prev:hover:not(:disabled) { background: #fce7f3; }
+    .btn-prev:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-next { background: #ec4899; color: #fff; border: none; box-shadow: 0 4px 14px rgba(236,72,153,0.35); }
+    .btn-next:hover:not(:disabled) { background: #db2777; }
+    .btn-next:disabled { opacity: 0.4; cursor: not-allowed; }
+    .flipbook-hint { font-size: 0.75rem; color: #9ca3af; font-style: italic; }
+    .flipbook-page-indicator { font-size: 0.75rem; font-weight: 600; color: #f472b6; letter-spacing: 0.05em; min-width: 80px; text-align: center; }
+
+    /* ── KOI aur Dooja page ── */
+    .koi-page {
+      background: #fff;
+      position: relative;
+      height: 100%;
+      overflow: hidden;
+      font-family: sans-serif;
+    }
+    .koi-love-text {
+      position: absolute; top: 14px; left: 14px; width: 148px;
+      line-height: 1.65; font-family: 'Caveat', cursive; font-size: 13px;
+      color: #c0392b; opacity: .88; pointer-events: none; user-select: none;
+    }
+    .koi-title-block { position: absolute; top: 8px; right: 12px; text-align: right; line-height: 1.1; }
+    .koi-title-koi { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 900; letter-spacing: 2px; color: #111; }
+    .koi-title-aur { font-family: 'Noto Sans Devanagari', sans-serif; font-size: 24px; font-weight: 900; color: #111; }
+    .koi-title-dooja { display: block; font-family: 'Dancing Script', cursive; font-size: 38px; font-weight: 700; color: #111; margin-top: -4px; }
+    .koi-films-row { position: absolute; top: 130px; left: 12px; right: 12px; display: flex; gap: 10px; align-items: flex-start; }
+    .koi-film {
+      position: relative; background: #111; border-radius: 3px; padding: 8px 5px; flex: 1;
+    }
+    .koi-film::before, .koi-film::after {
+      content: ''; position: absolute; left: 0; right: 0; height: 9px;
+      background: repeating-linear-gradient(to right, #111 0px, #111 4px, #fff 4px, #fff 10px, #111 10px, #111 14px);
+    }
+    .koi-film::before { top: 0; border-radius: 3px 3px 0 0; }
+    .koi-film::after  { bottom: 0; border-radius: 0 0 3px 3px; }
+    .koi-film-label { position: absolute; top: 12px; left: 6px; font-size: 7px; color: #aaa; font-family: monospace; letter-spacing: 1px; writing-mode: vertical-rl; transform: rotate(180deg); }
+    .koi-film-photo { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; border-radius: 1px; }
+    .koi-film-placeholder {
+      width: 100%; aspect-ratio: 4/3; background: #2a2a2a; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; color: #888; font-size: 10px;
+      text-align: center; gap: 5px; border-radius: 1px; cursor: pointer; border: 2px dashed #555;
+    }
+    .koi-film-placeholder svg { width: 22px; height: 22px; stroke: #666; fill: none; stroke-width: 1.5; }
+    .koi-film.right { transform: rotate(3deg) translateY(7px); }
+    .koi-bottom-block { position: absolute; bottom: 46px; left: 16px; }
+    .koi-kyun { font-family: 'Dancing Script', cursive; font-size: 50px; font-weight: 700; color: #8b0000; line-height: 1; }
+    .koi-mujhe { font-family: 'Abril Fatface', serif; font-size: 58px; color: #111; line-height: 1; letter-spacing: 2px; }
+    .koi-rose-accent { position: absolute; bottom: 0; right: 0; width: 100px; height: 120px; overflow: hidden; pointer-events: none; }
+    .koi-rose-svg { position: absolute; bottom: -8px; right: -8px; width: 125px; opacity: .9; }
+    .koi-brand { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); text-align: center; font-size: 9px; font-weight: 700; letter-spacing: .5px; line-height: 1.3; }
+    .koi-brand span:first-child { color: #e74c3c; }
+    .koi-brand span:last-child  { color: #f39c12; }
+    .koi-upload-input { display: none; }
+
+    /* ── Stamp / magazine page ── */
+    .stamp-page {
+      background: #fff;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0;
+    }
+    .stamp-top-text {
+      position: absolute;
+      top: 14px;
+      left: 0; right: 0;
+      display: flex;
+      align-items: baseline;
+      justify-content: flex-start;
+      padding: 0 18px;
+      gap: 6px;
+      z-index: 2;
+    }
+    .stamp-na {
+      font-family: 'Noto Sans Devanagari', sans-serif;
+      font-size: 52px;
+      font-weight: 900;
+      color: #111;
+      line-height: 1;
+    }
+    .stamp-tere-siwa {
+      font-family: 'Dancing Script', cursive;
+      font-size: 44px;
+      font-weight: 700;
+      color: #8b0000;
+      line-height: 1;
+    }
+    .stamp-vinyl {
+      position: absolute;
+      right: -48px;
+      top: 8px;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: repeating-radial-gradient(circle, #222 0px, #333 2px, #1a1a1a 4px);
+      opacity: 0.18;
+      z-index: 1;
+    }
+    .stamp-frame-wrap {
+      position: absolute;
+      top: 78px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 3;
+      width: 86%;
+    }
+    .stamp-frame {
+      position: relative;
+      background: #8b0000;
+      padding: 12px;
+      border-radius: 4px;
+    }
+    /* Perforated stamp edges */
+    .stamp-frame::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 4px;
+      background:
+        radial-gradient(circle at 0% 0%, #fff 6px, transparent 6px),
+        radial-gradient(circle at 100% 0%, #fff 6px, transparent 6px),
+        radial-gradient(circle at 0% 100%, #fff 6px, transparent 6px),
+        radial-gradient(circle at 100% 100%, #fff 6px, transparent 6px);
+      background-size: 12px 12px;
+    }
+    .stamp-perfs {
+      position: absolute;
+      inset: 0;
+      border-radius: 4px;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .stamp-photo-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1.05;
+      background: #ddd;
+      overflow: hidden;
+    }
+    .stamp-photo {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .stamp-placeholder {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: #c0392b22;
+      color: #8b0000; font-size: 11px; gap: 6px;
+      cursor: pointer; border: 2px dashed #8b0000;
+    }
+    .stamp-placeholder svg { width: 28px; height: 28px; stroke: #8b0000; fill: none; stroke-width: 1.5; }
+    .stamp-upload { display: none; }
+    .stamp-bottom-text {
+      position: absolute;
+      bottom: 42px;
+      left: 0; right: 0;
+      text-align: left;
+      padding: 0 18px;
+      z-index: 3;
+    }
+    .stamp-chahiye {
+      font-family: 'Abril Fatface', serif;
+      font-size: 62px;
+      color: #111;
+      line-height: 1;
+      letter-spacing: 2px;
+    }
+    .stamp-brand {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .5px;
+      line-height: 1.3;
+      z-index: 3;
+    }
+    .stamp-brand span:first-child { color: #e74c3c; }
+    .stamp-brand span:last-child  { color: #f39c12; }
+
+    /* ── Letter page ── */
+    .letter-page {
+      background: #fffdf7;
+      background-image:
+        repeating-linear-gradient(transparent, transparent 24px, #e8dfc8 24px, #e8dfc8 25px);
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 1rem 1.1rem 1rem 0.8rem;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Quicksand', sans-serif;
+      position: relative;
+      scrollbar-width: none;
+    }
+    .letter-page::-webkit-scrollbar { display: none; }
+    .letter-page::before {
+      content: '';
+      position: absolute;
+      left: 40px;
+      top: 0; bottom: 0;
+      width: 1.5px;
+      background: rgba(236, 150, 150, 0.45);
+      pointer-events: none;
+    }
+    .letter-header {
+      padding-left: 2.2rem;
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+    .letter-chapter {
+      font-family: 'Dancing Script', cursive;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #be185d;
+      margin-bottom: 0.12rem;
+    }
+    .letter-heading {
+      font-family: 'Dancing Script', cursive;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #9d174d;
+      line-height: 1.15;
+      margin-bottom: 0.08rem;
+    }
+    .letter-date {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #be185d;
+      letter-spacing: 0.06em;
+    }
+    .letter-divider {
+      width: 44px;
+      height: 2px;
+      background: linear-gradient(to right, #f9a8d4, #fce7f3);
+      border-radius: 2px;
+      margin: 0 auto 0.55rem;
+    }
+    .letter-body {
+      font-size: 0.73rem;
+      line-height: 1.68;
+      color: #374151;
+      padding-left: 2.2rem;
+      text-align: left;
+      flex: 1;
+    }
+    .letter-body p { margin-bottom: 0.42rem; }
+    .letter-body .highlight {
+      font-family: 'Dancing Script', cursive;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #be185d;
+    }
+
+    /* ── Impression page (same ruled paper style) ── */
+    .impression-page {
+      background: #fffdf7;
+      background-image: repeating-linear-gradient(transparent, transparent 24px, #e8dfc8 24px, #e8dfc8 25px);
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 1rem 1.1rem 1rem 0.8rem;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Quicksand', sans-serif;
+      position: relative;
+      scrollbar-width: none;
+    }
+    .impression-page::-webkit-scrollbar { display: none; }
+    .impression-page::before {
+      content: '';
+      position: absolute;
+      left: 40px; top: 0; bottom: 0;
+      width: 1.5px;
+      background: rgba(236, 150, 150, 0.45);
+      pointer-events: none;
+    }
+
+    /* ── Har Safar page ── */
+    .safar-page {
+      background: #8b0000;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+    }
+    .safar-top {
+      padding: 14px 14px 6px;
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .safar-har {
+      font-family: 'Abril Fatface', serif;
+      font-size: 52px;
+      color: #fff;
+      line-height: 1;
+      background: #111;
+      padding: 0 6px;
+      border-radius: 2px;
+    }
+    .safar-safar {
+      font-family: 'Playfair Display', serif;
+      font-size: 46px;
+      font-weight: 900;
+      font-style: italic;
+      color: #fff;
+      line-height: 1;
+      letter-spacing: 1px;
+    }
+    .safar-film-strip {
+      position: absolute;
+      top: 10px;
+      right: -4px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      z-index: 4;
+    }
+    .safar-film-strip span {
+      display: block;
+      width: 18px; height: 12px;
+      background: #222;
+      border: 1px solid #555;
+      border-radius: 1px;
+    }
+    /* Doily / lace border frame */
+    .safar-frame-wrap {
+      flex: 1;
+      margin: 4px 14px 6px;
+      position: relative;
+      min-height: 0;
+    }
+    .safar-doily {
+      position: absolute;
+      inset: 0;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    /* SVG doily via clip — we'll use a CSS pattern approach */
+    .safar-doily::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: #fff;
+      border-radius: 6px;
+    }
+    /* inner photo area */
+    .safar-doily::after {
+      content: '';
+      position: absolute;
+      inset: 10px;
+      background: #ccc;
+      border-radius: 2px;
+    }
+    .safar-lace-border {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      border-radius: 6px;
+      /* lace-like repeating pattern using box-shadow trick */
+      border: 10px solid transparent;
+      box-shadow:
+        inset 0 0 0 2px #8b0000,
+        inset 0 0 0 4px #fff,
+        inset 0 0 0 6px #8b0000;
+    }
+    .safar-photo-inner {
+      position: absolute;
+      inset: 10px;
+      z-index: 1;
+      overflow: hidden;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+    .safar-photo {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+    .safar-placeholder {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: #b0000022;
+      color: #fff; font-size: 11px; gap: 6px;
+      cursor: pointer;
+      border: 2px dashed rgba(255,255,255,0.5);
+    }
+    .safar-placeholder svg { width: 26px; height: 26px; stroke: #fff; fill: none; stroke-width: 1.5; }
+    .safar-upload { display: none; }
+    .safar-ribbon {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      z-index: 3;
+    }
+    .safar-ribbon svg { width: 32px; height: 32px; }
+    .safar-bottom {
+      padding: 6px 14px 10px;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .safar-main {
+      font-family: 'Abril Fatface', serif;
+      font-size: 52px;
+      color: #fff;
+      line-height: 1;
+    }
+    .safar-tujhe {
+      font-family: 'Noto Sans Devanagari', sans-serif;
+      font-size: 48px;
+      font-weight: 900;
+      color: #111;
+      background: #fff;
+      padding: 0 5px;
+      border-radius: 2px;
+      line-height: 1;
+    }
+    .safar-brand {
+      position: absolute;
+      bottom: 8px;
+      right: 14px;
+      text-align: center;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .5px;
+      line-height: 1.3;
+      z-index: 5;
+    }
+    .safar-brand span:first-child { color: #fde68a; }
+    .safar-brand span:last-child  { color: #fcd34d; }
+
+    /* ── Interview page ── */
+    .interview-page {
+      background: #fffdf7;
+      background-image: repeating-linear-gradient(transparent, transparent 24px, #e8dfc8 24px, #e8dfc8 25px);
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 1rem 1.1rem 1rem 0.8rem;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Quicksand', sans-serif;
+      position: relative;
+      scrollbar-width: none;
+    }
+    .interview-page::-webkit-scrollbar { display: none; }
+    .interview-page::before {
+      content: '';
+      position: absolute;
+      left: 40px; top: 0; bottom: 0;
+      width: 1.5px;
+      background: rgba(236, 150, 150, 0.45);
+      pointer-events: none;
+    }
+
+    /* ── Tu Hi Rehnuma page ── */
+    .rehnuma-page {
+      background: #fff;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    .rehnuma-top {
+      padding: 16px 16px 4px;
+      flex-shrink: 0;
+    }
+    .rehnuma-tu-hi {
+      font-family: 'Abril Fatface', serif;
+      font-size: 44px;
+      color: #111;
+      line-height: 1;
+      display: inline;
+    }
+    .rehnuma-script {
+      font-family: 'Dancing Script', cursive;
+      font-size: 46px;
+      font-weight: 700;
+      color: #1a1a1a;
+      line-height: 1;
+      display: inline;
+      margin-left: 4px;
+    }
+    .rehnuma-chahiye {
+      font-family: 'Abril Fatface', serif;
+      font-size: 56px;
+      color: #8b0000;
+      line-height: 1;
+      letter-spacing: 2px;
+      display: block;
+      margin-top: -4px;
+    }
+    .rehnuma-photo-wrap {
+      flex: 1;
+      margin: 8px 16px 0;
+      position: relative;
+      min-height: 0;
+      overflow: hidden;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .rehnuma-photo {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .rehnuma-placeholder {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: #f5e5e5;
+      color: #8b0000; font-size: 11px; gap: 6px;
+      cursor: pointer; border: 2px dashed #8b0000;
+    }
+    .rehnuma-placeholder svg { width: 26px; height: 26px; stroke: #8b0000; fill: none; stroke-width: 1.5; }
+    .rehnuma-upload { display: none; }
+    /* Scattered real flower emojis across the bottom */
+    .rehnuma-petals {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .rehnuma-petals img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .rehnuma-brand {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      font-size: 9px; font-weight: 700; letter-spacing: .5px; line-height: 1.3;
+      z-index: 5;
+    }
+    .rehnuma-brand span:first-child { color: #e74c3c; }
+    .rehnuma-brand span:last-child  { color: #f39c12; }
+
+    /* ── Getting To Know You page ── */
+    .knowing-page {
+      background: #fffdf7;
+      background-image: repeating-linear-gradient(transparent, transparent 24px, #e8dfc8 24px, #e8dfc8 25px);
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 1rem 1.1rem 1rem 0.8rem;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Quicksand', sans-serif;
+      position: relative;
+      scrollbar-width: none;
+    }
+    .knowing-page::-webkit-scrollbar { display: none; }
+    .knowing-page::before {
+      content: '';
+      position: absolute;
+      left: 40px; top: 0; bottom: 0;
+      width: 1.5px;
+      background: rgba(236, 150, 150, 0.45);
+      pointer-events: none;
+    }
+
+    /* ── Jeene Ko page ── */
+    .jeene-page {
+      background: #fff;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .jeene-top {
+      width: 100%;
+      padding: 14px 16px 0;
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .jeene-hindi {
+      font-family: 'Noto Sans Devanagari', sans-serif;
+      font-size: 48px;
+      font-weight: 900;
+      color: #111;
+      line-height: 1;
+    }
+    .jeene-ko {
+      font-family: 'Dancing Script', cursive;
+      font-size: 50px;
+      font-weight: 700;
+      color: #c0392b;
+      line-height: 1;
+    }
+    /* Floating hearts top-right */
+    .jeene-hearts {
+      position: absolute;
+      top: 10px; right: 10px;
+      display: grid;
+      grid-template-columns: repeat(3, 14px);
+      gap: 5px;
+      z-index: 3;
+    }
+    .jeene-hearts span {
+      color: #c0392b;
+      font-size: 13px;
+      line-height: 1;
+    }
+    /* Watercolour wash behind film */
+    .jeene-wash {
+      position: absolute;
+      top: 70px; left: 50%;
+      transform: translateX(-50%);
+      width: 78%;
+      height: 340px;
+      background: radial-gradient(ellipse 90% 80% at 50% 50%, rgba(255,182,193,0.55) 0%, transparent 80%);
+      border-radius: 12px;
+      pointer-events: none;
+      z-index: 1;
+    }
+    /* Dried flower branch – left */
+    .jeene-branch {
+      position: absolute;
+      left: 6px;
+      top: 160px;
+      font-size: 42px;
+      z-index: 2;
+      transform: rotate(15deg);
+      filter: drop-shadow(0 2px 3px rgba(0,0,0,0.08));
+      pointer-events: none;
+    }
+    /* Film strip */
+    .jeene-film-wrap {
+      position: relative;
+      z-index: 3;
+      margin-top: 8px;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+    }
+    .jeene-film {
+      background: #111;
+      border-radius: 4px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      width: 62%;
+      position: relative;
+    }
+    /* sprocket holes left */
+    .jeene-film::before {
+      content: '';
+      position: absolute;
+      left: 3px; top: 0; bottom: 0; width: 8px;
+      background: repeating-linear-gradient(to bottom, #111 0px, #111 6px, #fff 6px, #fff 12px, #111 12px, #111 18px);
+      border-radius: 4px 0 0 4px;
+    }
+    /* sprocket holes right */
+    .jeene-film::after {
+      content: '';
+      position: absolute;
+      right: 3px; top: 0; bottom: 0; width: 8px;
+      background: repeating-linear-gradient(to bottom, #111 0px, #111 6px, #fff 6px, #fff 12px, #111 12px, #111 18px);
+      border-radius: 0 4px 4px 0;
+    }
+    .jeene-slot {
+      width: 100%;
+      aspect-ratio: 4/3;
+      background: #2a2a2a;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      border-radius: 1px;
+    }
+    .jeene-slot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .jeene-slot .jeene-ph {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 3px;
+      color: #888; font-size: 9px;
+    }
+    .jeene-slot .jeene-ph svg { width: 18px; height: 18px; stroke: #666; fill: none; stroke-width: 1.5; }
+    .jeene-upload { display: none; }
+    .jeene-bottom {
+      width: 100%;
+      padding: 6px 16px 12px;
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      flex-shrink: 0;
+      z-index: 3;
+    }
+    .jeene-bas {
+      font-family: 'Dancing Script', cursive;
+      font-size: 52px;
+      font-weight: 700;
+      color: #c0392b;
+      line-height: 1;
+    }
+    .jeene-mujhe {
+      font-family: 'Noto Sans Devanagari', sans-serif;
+      font-size: 46px;
+      font-weight: 900;
+      color: #111;
+      line-height: 1;
+    }
+    .jeene-brand {
+      position: absolute;
+      bottom: 10px; right: 14px;
+      text-align: center;
+      font-size: 9px; font-weight: 700; letter-spacing: .5px; line-height: 1.3;
+      z-index: 5;
+    }
+    .jeene-brand span:first-child { color: #e74c3c; }
+    .jeene-brand span:last-child  { color: #f39c12; }
+
+    /* ── Friendship letter page ── */
+    .friendship-page {
+      background: #fffdf7;
+      background-image: repeating-linear-gradient(transparent, transparent 24px, #e8dfc8 24px, #e8dfc8 25px);
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 1rem 1.1rem 1rem 0.8rem;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Quicksand', sans-serif;
+      position: relative;
+      scrollbar-width: none;
+    }
+    .friendship-page::-webkit-scrollbar { display: none; }
+    .friendship-page::before {
+      content: '';
+      position: absolute;
+      left: 40px; top: 0; bottom: 0;
+      width: 1.5px;
+      background: rgba(236, 150, 150, 0.45);
+      pointer-events: none;
+    }
+
+    /* ── Tu hi Mehrban page ── */
+    .mehrban-page {
+      background: #8b0000;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    /* torn white strip top */
+    .mehrban-torn-top {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 18px;
+      background: #fff;
+      clip-path: polygon(0 0, 100% 0, 100% 40%, 92% 100%, 84% 50%, 76% 100%, 68% 40%, 60% 100%, 52% 50%, 44% 100%, 36% 40%, 28% 100%, 20% 50%, 12% 100%, 4% 40%, 0 100%);
+      z-index: 4;
+    }
+    /* small hearts left edge */
+    .mehrban-hearts {
+      position: absolute;
+      left: 6px;
+      top: 40%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 3;
+    }
+    .mehrban-hearts span { color: #fff; font-size: 11px; opacity: 0.7; }
+    /* two polaroids */
+    .mehrban-photos {
+      display: flex;
+      gap: 10px;
+      padding: 24px 14px 8px;
+      flex-shrink: 0;
+      z-index: 2;
+      position: relative;
+    }
+    .mehrban-polaroid {
+      flex: 1;
+      background: #fff;
+      padding: 7px 7px 22px;
+      box-shadow: 3px 4px 14px rgba(0,0,0,0.35);
+      position: relative;
+      cursor: pointer;
+    }
+    .mehrban-polaroid:first-child { transform: rotate(-4deg) translateY(6px); }
+    .mehrban-polaroid:last-child  { transform: rotate(3deg) translateY(-4px); }
+    .mehrban-pol-photo {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      display: block;
+      background: #ddd;
+    }
+    .mehrban-pol-ph {
+      width: 100%;
+      aspect-ratio: 1;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: #f0e8e8;
+      color: #8b0000; font-size: 9px; gap: 4px;
+    }
+    .mehrban-pol-ph svg { width: 20px; height: 20px; stroke: #8b0000; fill: none; stroke-width: 1.5; }
+    .mehrban-upload { display: none; }
+    /* brush stroke accent */
+    .mehrban-brush {
+      position: absolute;
+      top: 18px; left: 10px;
+      width: 60px; height: 14px;
+      background: rgba(255,255,255,0.18);
+      border-radius: 50%;
+      transform: rotate(-8deg);
+      z-index: 1;
+    }
+    /* bottom text block */
+    .mehrban-text {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+      padding: 4px 16px 22px;
+      z-index: 2;
+    }
+    .mehrban-tu-hi {
+      font-family: 'Dancing Script', cursive;
+      font-size: 52px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.2;
+    }
+    .mehrban-hindi {
+      font-family: 'Noto Sans Devanagari', sans-serif;
+      font-size: 46px;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.15;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.45);
+    }
+    .mehrban-chahiye {
+      font-family: 'Dancing Script', cursive;
+      font-size: 50px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.2;
+    }
+    /* torn white strip bottom */
+    .mehrban-torn-bottom {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 16px;
+      background: #fff;
+      clip-path: polygon(0 100%, 100% 100%, 100% 60%, 92% 0%, 84% 50%, 76% 0%, 68% 60%, 60% 0%, 52% 50%, 44% 0%, 36% 60%, 28% 0%, 20% 50%, 12% 0%, 4% 60%, 0 0%);
+      z-index: 4;
+    }
+    .mehrban-brand {
+      position: absolute;
+      bottom: 18px; right: 14px;
+      text-align: center;
+      font-size: 9px; font-weight: 700; letter-spacing: .5px; line-height: 1.3;
+      z-index: 5;
+    }
+    .mehrban-brand span:first-child { color: #fde68a; }
+    .mehrban-brand span:last-child  { color: #fcd34d; }
+
+    /* ── Coffee letter page ── */
+    .coffee-page {
+      background: #fffdf7;
+      background-image: repeating-linear-gradient(transparent, transparent 24px, #e8dfc8 24px, #e8dfc8 25px);
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 1rem 1.1rem 1rem 0.8rem;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Quicksand', sans-serif;
+      position: relative;
+      scrollbar-width: none;
+    }
+    .coffee-page::-webkit-scrollbar { display: none; }
+    .coffee-page::before {
+      content: '';
+      position: absolute;
+      left: 40px; top: 0; bottom: 0;
+      width: 1.5px;
+      background: rgba(236, 150, 150, 0.45);
+      pointer-events: none;
+    }
+
+    /* ── The Day You Were Sad page ── */
+    .sad-page {
+      background: #fffdf7;
+      background-image: repeating-linear-gradient(transparent, transparent 24px, #e8dfc8 24px, #e8dfc8 25px);
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 1rem 1.1rem 1rem 0.8rem;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Quicksand', sans-serif;
+      position: relative;
+      scrollbar-width: none;
+    }
+    .sad-page::-webkit-scrollbar { display: none; }
+    .sad-page::before {
+      content: '';
+      position: absolute;
+      left: 40px; top: 0; bottom: 0;
+      width: 1.5px;
+      background: rgba(236, 150, 150, 0.45);
+      pointer-events: none;
+    }
+
+    /* ── Shared ruled-page base for final 3 chapters ── */
+    .ruled-page {
+      background: #fffdf7;
+      background-image: repeating-linear-gradient(transparent, transparent 24px, #e8dfc8 24px, #e8dfc8 25px);
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 1rem 1.1rem 1rem 0.8rem;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Quicksand', sans-serif;
+      position: relative;
+      scrollbar-width: none;
+    }
+    .ruled-page::-webkit-scrollbar { display: none; }
+    .ruled-page::before {
+      content: '';
+      position: absolute;
+      left: 40px; top: 0; bottom: 0;
+      width: 1.5px;
+      background: rgba(236, 150, 150, 0.45);
+      pointer-events: none;
+    }
+
+    /* Heart page special styles */
+    .heart-page {
+      background-color: #fff0f4;
+      background-image:
+        repeating-linear-gradient(transparent, transparent 24px, #f9c8d8 24px, #f9c8d8 25px);
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 1rem 1.1rem 1rem 0.8rem;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Quicksand', sans-serif;
+      position: relative;
+      scrollbar-width: none;
+    }
+    .heart-page::-webkit-scrollbar { display: none; }
+    .heart-page::before {
+      content: '';
+      position: absolute;
+      left: 40px; top: 0; bottom: 0;
+      width: 1.5px;
+      background: rgba(236, 100, 130, 0.5);
+      pointer-events: none;
+    }
+    .heart-page .letter-body {
+      font-size: 0.72rem;
+      line-height: 1.75;
+      color: #4b2035;
+    }
+    .heart-page .letter-body p { margin-bottom: 0.38rem; }
+    .heart-confetti {
+      position: absolute;
+      top: 0; right: 0;
+      width: 60px; height: 80px;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .heart-confetti span {
+      position: absolute;
+      font-size: 11px;
+      color: #e75480;
+      opacity: 0.5;
+    }
+    .heart-confetti span:nth-child(1) { top: 8px;  right: 10px; }
+    .heart-confetti span:nth-child(2) { top: 20px; right: 28px; font-size: 8px; }
+    .heart-confetti span:nth-child(3) { top: 34px; right: 12px; font-size: 14px; }
+    .heart-confetti span:nth-child(4) { top: 14px; right: 44px; font-size: 9px; }
+    .heart-confetti span:nth-child(5) { top: 50px; right: 30px; font-size: 10px; }
+    .heart-final-line {
+      margin-top: 0.5rem;
+      font-family: 'Dancing Script', cursive;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #be185d;
+      text-align: center;
+      padding-left: 2.2rem;
+    }
+
+    /* ── I Love You last page ── */
+    .iloveyou-page {
+      background-color: #fff;
+      background-image:
+        repeating-linear-gradient(45deg, #f5e6e6 0px, #f5e6e6 1px, transparent 1px, transparent 28px),
+        repeating-linear-gradient(-45deg, #f5e6e6 0px, #f5e6e6 1px, transparent 1px, transparent 28px);
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .iloveyou-title {
+      width: 100%;
+      padding: 18px 16px 4px;
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .iloveyou-i {
+      font-family: 'Dancing Script', cursive;
+      font-size: 52px;
+      font-weight: 700;
+      color: #8b0000;
+      line-height: 1;
+    }
+    .iloveyou-love {
+      font-family: 'Abril Fatface', serif;
+      font-size: 58px;
+      color: #8b0000;
+      line-height: 1;
+    }
+    .iloveyou-you {
+      font-family: 'Abril Fatface', serif;
+      font-size: 58px;
+      color: #d4a0a0;
+      line-height: 1;
+    }
+    /* Playing card */
+    .iloveyou-card-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 4px 20px 16px;
+      min-height: 0;
+    }
+    .iloveyou-card {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 6px 28px rgba(139,0,0,0.18), 0 1px 4px rgba(0,0,0,0.1);
+      width: 100%;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      border: 1.5px solid #e8d0d0;
+    }
+    /* Ace corner top-left */
+    .iloveyou-ace-tl {
+      position: absolute;
+      top: 8px; left: 10px;
+      display: flex; flex-direction: column; align-items: center;
+      z-index: 2; line-height: 1;
+    }
+    .iloveyou-ace-tl .ace-letter {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px; font-weight: 900;
+      color: #8b0000; line-height: 1;
+    }
+    .iloveyou-ace-tl .ace-suit { font-size: 16px; color: #8b0000; }
+    /* Ace corner bottom-right (rotated 180) */
+    .iloveyou-ace-br {
+      position: absolute;
+      bottom: 8px; right: 10px;
+      display: flex; flex-direction: column; align-items: center;
+      z-index: 2; line-height: 1;
+      transform: rotate(180deg);
+    }
+    .iloveyou-ace-br .ace-letter {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px; font-weight: 900;
+      color: #8b0000; line-height: 1;
+    }
+    .iloveyou-ace-br .ace-suit { font-size: 16px; color: #8b0000; }
+    /* Photo inside card */
+    .iloveyou-photo {
+      position: absolute;
+      inset: 10px;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .iloveyou-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .iloveyou-ph {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: #fdf0f0;
+      color: #8b0000; font-size: 11px; gap: 6px;
+      cursor: pointer;
+    }
+    .iloveyou-ph svg { width: 26px; height: 26px; stroke: #8b0000; fill: none; stroke-width: 1.5; }
+    .iloveyou-upload { display: none; }
+    .iloveyou-brand {
+      position: absolute;
+      bottom: 6px; left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      font-size: 9px; font-weight: 700; letter-spacing: .5px; line-height: 1.3;
+      z-index: 5;
+    }
+    .iloveyou-brand span:first-child { color: #e74c3c; }
+    .iloveyou-brand span:last-child  { color: #f39c12; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between overflow-x-hidden text-gray-800 p-4 sm:p-6 transition-colors duration-500">
+
+  <canvas id="confettiCanvas" class="fixed inset-0 pointer-events-none z-50 w-full h-full"></canvas>
+
+  <header class="w-full max-w-5xl flex justify-between items-center z-10 mb-4">
+    <div class="flex items-center gap-2">
+      <span class="text-2xl">💝</span>
+      <span class="font-bold text-gray-700 hidden sm:inline">Love Studio</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <button id="muteBtn" class="p-2 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-600 transition-all active:scale-95" title="Toggle Sound">
+        <svg id="volumeIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.69-3.69a1 1 0 011.107-.234zM11 10a3 3 0 01-3 3H7.828l-1.764 1.764A5 5 0 0013 10V4.34a1 1 0 10-2 0V10z" clip-rule="evenodd"/>
+        </svg>
+      </button>
+      <button id="settingsBtn" class="p-2 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-600 transition-all active:scale-95" title="Settings">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="w-full max-w-5xl bg-white rounded-3xl shadow-xl shadow-pink-100/50 border border-pink-100 p-6 sm:p-10 flex-grow flex flex-col justify-center relative transition-all duration-500 overflow-hidden min-h-[550px]">
+
+    <!-- LOCK SCREEN -->
+    <div id="lockScreenView" class="w-full flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-16 transition-all duration-500">
+
+      <!-- Snoopy illustration -->
+      <div class="w-full lg:w-1/2 flex flex-col items-center justify-center relative">
+        <div id="snoopyContainer" class="relative cursor-pointer transition-all active:scale-95 duration-300" title="Click me for a surprise!">
+          <svg width="100%" height="auto" viewBox="0 0 420 400" class="max-w-[340px] sm:max-w-[400px]" xmlns="http://www.w3.org/2000/svg">
+            <g id="snoopy-puppy">
+              <ellipse cx="170" cy="365" rx="90" ry="12" fill="#f0ebdf" />
+              <path d="M 90 280 C 70 282, 65 270, 78 262 C 85 258, 92 268, 90 280" fill="#ffffff" stroke="#1c1917" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M 125 350 C 125 365, 160 365, 160 350 Z" fill="#ffffff" stroke="#1c1917" stroke-width="3" stroke-linejoin="round" />
+              <path d="M 135 360 L 135 352" stroke="#1c1917" stroke-width="2.5" stroke-linecap="round" />
+              <path d="M 148 360 L 148 352" stroke="#1c1917" stroke-width="2.5" stroke-linecap="round" />
+              <path d="M 115 230 C 110 280, 115 345, 155 350 C 185 352, 185 315, 180 270 C 180 250, 155 220, 115 230" fill="#ffffff" stroke="#1c1917" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M 160 350 C 160 368, 205 368, 205 350 Z" fill="#ffffff" stroke="#1c1917" stroke-width="3" stroke-linejoin="round" />
+              <path d="M 175 362 L 175 352" stroke="#1c1917" stroke-width="2.5" stroke-linecap="round" />
+              <path d="M 190 362 L 190 352" stroke="#1c1917" stroke-width="2.5" stroke-linecap="round" />
+              <path d="M 140 120 C 100 125, 80 180, 115 200 C 125 205, 145 202, 175 220 C 220 230, 245 190, 240 150 C 235 110, 180 115, 140 120 Z" fill="#ffffff" stroke="#1c1917" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+              <ellipse cx="238" cy="142" rx="10" ry="14" fill="#1c1917" transform="rotate(15 238 142)" />
+              <ellipse cx="235" cy="138" rx="3" ry="5" fill="#ffffff" transform="rotate(15 235 138)" />
+              <path d="M 132 155 C 138 162, 146 162, 152 155" fill="none" stroke="#1c1917" stroke-width="3" stroke-linecap="round" />
+              <path d="M 158 145 C 164 152, 172 152, 178 145" fill="none" stroke="#1c1917" stroke-width="3" stroke-linecap="round" />
+              <path d="M 198 188 C 190 193, 182 188, 178 184" fill="none" stroke="#1c1917" stroke-width="3.5" stroke-linecap="round" />
+              <path d="M 108 175 C 80 170, 40 200, 35 240 C 30 280, 75 285, 85 260 C 95 235, 115 210, 108 175" fill="#1c1917" stroke="#1c1917" stroke-width="3" stroke-linejoin="round" />
+              <path d="M 152 250 C 182 250, 192 275, 175 282" fill="none" stroke="#1c1917" stroke-width="3" stroke-linecap="round" />
+              <g stroke="#718752" stroke-width="3.5" stroke-linecap="round">
+                <path d="M 195 240 L 190 325" />
+                <path d="M 185 245 L 175 320" />
+                <path d="M 205 242 L 202 328" />
+                <path d="M 175 250 L 182 322" />
+              </g>
+              <path d="M 135 258 C 145 258, 178 260, 185 278 C 188 285, 172 292, 160 282" fill="#ffffff" stroke="#1c1917" stroke-width="3" stroke-linejoin="round" />
+              <g transform="translate(145, 205)">
+                <path d="M 0 0 C -15 -35, 15 -35, 0 0 C 35 -15, 35 15, 0 0 C 15 35, -15 35, 0 0 C -35 15, -35 -15, 0 0" fill="#fbcfe8" stroke="#1c1917" stroke-width="2.5" />
+                <path d="M -15 -15 L 0 0 M 15 -15 L 0 0 M 15 15 L 0 0 M -15 15 L 0 0" stroke="#f472b6" stroke-width="1.5" />
+                <circle cx="0" cy="0" r="4" fill="#f43f5e" />
+              </g>
+              <g transform="translate(185, 218)">
+                <path d="M 0 0 C -10 -25, 15 -25, 0 0 C 25 -10, 25 10, 0 0 C 10 25, -10 25, 0 0 C -25 10, -25 -10, 0 0" fill="#fbcfe8" stroke="#1c1917" stroke-width="2.5" />
+                <path d="M -10 -10 L 0 0 M 10 -10 L 0 0 M 10 10 L 0 0 M -10 10 L 0 0" stroke="#f472b6" stroke-width="1.5" />
+                <circle cx="0" cy="0" r="3.5" fill="#f43f5e" />
+              </g>
+              <path d="M 205 210 C 220 195, 222 215, 205 230 Z" fill="#a3b899" stroke="#1c1917" stroke-width="2" />
+              <path d="M 210 220 C 230 215, 228 230, 212 238 Z" fill="#fbcfe8" stroke="#1c1917" stroke-width="2" />
+              <g transform="translate(230, 345)">
+                <path d="M 0 0 C -12 -20, 12 -20, 0 0 C 20 -8, 20 8, 0 0 C 8 20, -8 20, 0 0 C -20 8, -20 -8, 0 0" fill="#fbcfe8" stroke="#1c1917" stroke-width="2" />
+                <path d="M -8 -8 L 0 0 M 8 -8 L 0 0 M 8 8 L 0 0 M -8 8 L 0 0" stroke="#f472b6" stroke-width="1" />
+                <circle cx="0" cy="0" r="3" fill="#f43f5e" />
+              </g>
+            </g>
+          </svg>
+          <div id="flowerHeartAnchor" class="absolute top-1/2 left-1/2 w-4 h-4 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+        </div>
+        <p class="mt-4 text-sm text-pink-400 font-semibold italic text-center select-none animate-pulse">Click Snoopy for love sparks!</p>
+      </div>
+
+      <!-- Passcode Keypad -->
+      <div class="w-full lg:w-1/2 flex flex-col items-center justify-center">
+        <div id="passcodeDisplay" class="flex gap-4 justify-center mb-8">
+          <div class="input-slot w-14 h-14 border-4 border-gray-800 rounded-xl flex items-center justify-center font-bold text-3xl text-rose-500 bg-white transition-all duration-200 shadow-sm" data-index="0"></div>
+          <div class="input-slot w-14 h-14 border-4 border-gray-800 rounded-xl flex items-center justify-center font-bold text-3xl text-rose-500 bg-white transition-all duration-200 shadow-sm" data-index="1"></div>
+          <div class="input-slot w-14 h-14 border-4 border-gray-800 rounded-xl flex items-center justify-center font-bold text-3xl text-rose-500 bg-white transition-all duration-200 shadow-sm" data-index="2"></div>
+          <div class="input-slot w-14 h-14 border-4 border-gray-800 rounded-xl flex items-center justify-center font-bold text-3xl text-rose-500 bg-white transition-all duration-200 shadow-sm" data-index="3"></div>
+        </div>
+        <div class="grid grid-cols-3 gap-x-6 gap-y-4 max-w-[280px]">
+          <button class="keypad-btn relative w-20 h-20 flex items-center justify-center transition-transform active:scale-90 hover:scale-105 duration-150 focus:outline-none" data-value="1"><svg class="absolute inset-0 w-full h-full text-pink-200 fill-current filter drop-shadow" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg><span class="relative z-10 text-rose-500 font-bold text-2xl mt-[-4px]">1</span></button>
+          <button class="keypad-btn relative w-20 h-20 flex items-center justify-center transition-transform active:scale-90 hover:scale-105 duration-150 focus:outline-none" data-value="2"><svg class="absolute inset-0 w-full h-full text-pink-200 fill-current filter drop-shadow" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg><span class="relative z-10 text-rose-500 font-bold text-2xl mt-[-4px]">2</span></button>
+          <button class="keypad-btn relative w-20 h-20 flex items-center justify-center transition-transform active:scale-90 hover:scale-105 duration-150 focus:outline-none" data-value="3"><svg class="absolute inset-0 w-full h-full text-pink-200 fill-current filter drop-shadow" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg><span class="relative z-10 text-rose-500 font-bold text-2xl mt-[-4px]">3</span></button>
+          <button class="keypad-btn relative w-20 h-20 flex items-center justify-center transition-transform active:scale-90 hover:scale-105 duration-150 focus:outline-none" data-value="4"><svg class="absolute inset-0 w-full h-full text-pink-200 fill-current filter drop-shadow" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg><span class="relative z-10 text-rose-500 font-bold text-2xl mt-[-4px]">4</span></button>
+          <button class="keypad-btn relative w-20 h-20 flex items-center justify-center transition-transform active:scale-90 hover:scale-105 duration-150 focus:outline-none" data-value="5"><svg class="absolute inset-0 w-full h-full text-pink-200 fill-current filter drop-shadow" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg><span class="relative z-10 text-rose-500 font-bold text-2xl mt-[-4px]">5</span></button>
+          <button class="keypad-btn relative w-20 h-20 flex items-center justify-center transition-transform active:scale-90 hover:scale-105 duration-150 focus:outline-none" data-value="6"><svg class="absolute inset-0 w-full h-full text-pink-200 fill-current filter drop-shadow" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg><span class="relative z-10 text-rose-500 font-bold text-2xl mt-[-4px]">6</span></button>
+          <button class="keypad-btn relative w-20 h-20 flex items-center justify-center transition-transform active:scale-90 hover:scale-105 duration-150 focus:outline-none" data-value="7"><svg class="absolute inset-0 w-full h-full text-pink-200 fill-current filter drop-shadow" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg><span class="relative z-10 text-rose-500 font-bold text-2xl mt-[-4px]">7</span></button>
+          <button class="keypad-btn relative w-20 h-20 flex items-center justify-center transition-transform active:scale-90 hover:scale-105 duration-150 focus:outline-none" data-value="8"><svg class="absolute inset-0 w-full h-full text-pink-200 fill-current filter drop-shadow" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg><span class="relative z-10 text-rose-500 font-bold text-2xl mt-[-4px]">8</span></button>
+          <button class="keypad-btn relative w-20 h-20 flex items-center justify-center transition-transform active:scale-90 hover:scale-105 duration-150 focus:outline-none" data-value="9"><svg class="absolute inset-0 w-full h-full text-pink-200 fill-current filter drop-shadow" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg><span class="relative z-10 text-rose-500 font-bold text-2xl mt-[-4px]">9</span></button>
+          <button class="keypad-btn relative w-20 h-20 flex items-center justify-center transition-transform active:scale-90 hover:scale-105 duration-150 focus:outline-none" data-value="*"><svg class="absolute inset-0 w-full h-full text-pink-200 fill-current filter drop-shadow" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg><span class="relative z-10 text-rose-500 font-bold text-2xl mt-[2px]">*</span></button>
+          <button class="keypad-btn relative w-20 h-20 flex items-center justify-center transition-transform active:scale-90 hover:scale-105 duration-150 focus:outline-none" data-value="0"><svg class="absolute inset-0 w-full h-full text-pink-200 fill-current filter drop-shadow" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg><span class="relative z-10 text-rose-500 font-bold text-2xl mt-[-4px]">0</span></button>
+          <button id="clearBtn" class="relative w-20 h-20 flex items-center justify-center transition-transform active:scale-90 hover:scale-105 duration-150 focus:outline-none" title="Backspace"><svg class="absolute inset-0 w-full h-full text-pink-300 fill-current filter drop-shadow" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg><span class="relative z-10 text-rose-600 font-bold text-2xl mt-[-4px]">#</span></button>
+        </div>
+        <p id="hintText" class="text-xs text-gray-400 mt-6 select-none">
+          Hint: Enter <span id="hintCodeDisplay" class="font-bold text-rose-400 underline">1111</span> to unlock
+        </p>
+      </div>
+    </div>
+
+    <!-- FLIPBOOK VIEW -->
+    <div id="unlockedView" class="hidden w-full flex-col items-center justify-center text-center gap-4 py-2">
+      <h2 id="congratsTitle" class="text-2xl sm:text-3xl font-extrabold text-pink-600 tracking-tight mb-1">Access Granted, My Love!</h2>
+      <p class="flipbook-hint mb-2">Turn the pages of our love story</p>
+
+      <div class="flipbook-scene">
+        <div id="flipbook" class="flipbook" aria-label="Love flipbook"></div>
+
+        <div class="flipbook-nav">
+          <button type="button" id="flipPrevBtn" class="btn-prev" disabled>← Previous</button>
+          <span id="flipPageIndicator" class="flipbook-page-indicator">Cover</span>
+          <button type="button" id="flipNextBtn" class="btn-next">Open book →</button>
+        </div>
+      </div>
+
+      <button id="relockBtn" class="mt-4 px-6 py-2 border border-pink-200 hover:bg-pink-50 text-pink-500 font-bold rounded-full text-sm shadow-sm transition-all active:scale-95">
+        🔒 Lock Screen Again
+      </button>
+    </div>
+
+  </main>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl p-6 w-full max-w-sm border border-pink-100 shadow-xl transition-all scale-95 duration-200" id="settingsContent">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2"><span>🛠️</span> Customize Settings</h3>
+        <button id="closeSettings" class="p-1 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-gray-600 mb-1">Set New Passcode (4 Digits)</label>
+          <input id="newPasscodeInput" type="text" maxlength="4" placeholder="Default: 1111" class="w-full text-sm bg-gray-50 border border-pink-100 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-pink-400 font-bold tracking-widest text-center text-pink-600">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-600 mb-1">Celebration Message</label>
+          <input id="celebrationHeaderInput" type="text" placeholder="Access Granted, My Love!" class="w-full text-sm bg-gray-50 border border-pink-100 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-pink-400">
+        </div>
+        <div class="flex items-center justify-between py-2">
+          <span class="text-xs font-bold text-gray-600">Show hint on Lock Screen?</span>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input id="toggleHintCheckbox" type="checkbox" checked class="sr-only peer">
+            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-500"></div>
+          </label>
+        </div>
+      </div>
+      <div class="mt-6">
+        <button id="saveSettingsBtn" class="w-full py-3 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-xl text-sm transition-all active:scale-[0.98] shadow-md">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toastNotification" class="fixed bottom-6 bg-gray-900/90 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg pointer-events-none transform translate-y-10 opacity-0 transition-all duration-300 z-50 flex items-center gap-2">
+    <span id="toastIcon">✨</span>
+    <span id="toastMsg">Done!</span>
+  </div>
+
+  <footer class="w-full text-center py-4 select-none">
+    <p class="text-[11px] text-gray-400">Created with Love ❤️ by Gopal</p>
+  </footer>
+
+  <script>
+    // ===== CONFIG =====
+    let appConfig = { passcode: '1111', celebrationHeader: 'Access Granted, My Love!', showHint: true, soundMuted: false };
+    let enteredPasscode = '';
+    const maxPasscodeLength = 4;
+
+    // ===== AUDIO =====
+    let audioCtx = null;
+    function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    const freqs = { '1':523.25,'2':587.33,'3':659.25,'4':698.46,'5':783.99,'6':880,'7':987.77,'8':1046.5,'9':1174.66,'0':440,'*':392,'#':349.23 };
+
+    function playTone(key) {
+      if (appConfig.soundMuted) return;
+      initAudio();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freqs[key] || 440, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.35);
+    }
+
+    function playSuccessChime() {
+      if (appConfig.soundMuted) return;
+      initAudio();
+      [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const t = audioCtx.currentTime + i * 0.08;
+        osc.type = 'sine'; osc.frequency.setValueAtTime(f, t);
+        gain.gain.setValueAtTime(0.1, t); gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(t); osc.stop(t + 0.45);
+      });
+    }
+
+    function playError() {
+      if (appConfig.soundMuted) return;
+      initAudio();
+      [150, 140].forEach((f, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const t = audioCtx.currentTime + i * 0.15;
+        osc.type = 'sawtooth'; osc.frequency.setValueAtTime(f, t);
+        gain.gain.setValueAtTime(0.08, t); gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(t); osc.stop(t + 0.25);
+      });
+    }
+
+    // ===== TOAST =====
+    function showToast(msg, icon = '✨') {
+      const toast = document.getElementById('toastNotification');
+      document.getElementById('toastMsg').innerText = msg;
+      document.getElementById('toastIcon').innerText = icon;
+      toast.classList.remove('translate-y-10', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-10', 'opacity-0');
+      }, 3000);
+    }
+
+    // ===== CONFETTI =====
+    const canvas = document.getElementById('confettiCanvas');
+    const ctx = canvas.getContext('2d');
+    let confettiArr = [], isCelebrating = false;
+    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resizeCanvas); resizeCanvas();
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * -canvas.height - 20;
+        this.size = Math.random() * 12 + 8;
+        this.sx = Math.random() * 4 - 2; this.sy = Math.random() * 5 + 3;
+        this.rot = Math.random() * 360; this.rs = Math.random() * 4 - 2;
+        this.heart = Math.random() > 0.55;
+        const colors = ['#f472b6','#ec4899','#f43f5e','#fda4af','#fef08a','#fb7185'];
+        this.color = colors[Math.floor(Math.random() * colors.length)];
+      }
+      update() {
+        this.x += this.sx; this.y += this.sy; this.rot += this.rs;
+        if (this.y > canvas.height) { this.y = -20; this.x = Math.random() * canvas.width; }
+      }
+      draw() {
+        ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.rot * Math.PI / 180);
+        ctx.fillStyle = this.color;
+        if (this.heart) {
+          ctx.beginPath(); ctx.moveTo(0, 0);
+          ctx.bezierCurveTo(-this.size/2, -this.size/2, -this.size, 0, 0, this.size);
+          ctx.bezierCurveTo(this.size, 0, this.size/2, -this.size/2, 0, 0);
+          ctx.fill();
+        } else { ctx.beginPath(); ctx.arc(0, 0, this.size/2, 0, Math.PI*2); ctx.fill(); }
+        ctx.restore();
+      }
+    }
+
+    function startCelebration() {
+      isCelebrating = true;
+      confettiArr = Array.from({length: 120}, () => new Particle());
+      (function animate() {
+        if (!isCelebrating) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        confettiArr.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(animate);
+      })();
+      playSuccessChime();
+      setTimeout(() => { isCelebrating = false; ctx.clearRect(0, 0, canvas.width, canvas.height); }, 7000);
+    }
+
+    // ===== FLIPBOOK =====
+    const COVER_IMAGE = 'assets/flipbook-cover.png';
+    const flipbookPages = [
+      { type: 'koi' },
+      { type: 'letter' },
+      { type: 'stamp' },
+      { type: 'impression' },
+      { type: 'safar' },
+      { type: 'interview' },
+      { type: 'rehnuma' },
+      { type: 'knowing' },
+      { type: 'jeene' },
+      { type: 'friendship' },
+      { type: 'mehrban' },
+      { type: 'coffee' },
+      { type: 'sad' },
+      { type: 'changed' },
+      { type: 'realization' },
+      { type: 'heart1' },
+      { type: 'heart2' },
+      { type: 'iloveyou' }
+    ];
+
+    let currentPage = 0;
+    let totalPages = 0;
+    let isAnimating = false;
+
+    function buildSpotifyCover() {
+      const bars = Array.from({length:12}, () => '<span></span>').join('');
+      return `
+        <img class="spotify-cover__art" src="${COVER_IMAGE}" onerror="this.src='https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&auto=format&fit=crop&q=60'" alt="Tu Chahiye">
+        <div class="spotify-cover__brand-row">
+          <svg class="spotify-cover__logo" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+          <div class="spotify-cover__waveform">${bars}</div>
+        </div>
+        <div class="spotify-cover__meta">
+          <div><h1 class="spotify-cover__title">Tu Chahiye</h1><p class="spotify-cover__artist">Pritam, Atif Aslam</p></div>
+          <svg class="spotify-cover__like" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <div class="spotify-cover__progress">
+          <div class="spotify-cover__progress-track"><div class="spotify-cover__progress-fill" id="songProgressFill"></div></div>
+          <div class="spotify-cover__times"><span id="songCurrentTime">0:00</span><span id="songDuration">0:00</span></div>
+        </div>
+        <div class="spotify-cover__controls">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+          <div class="spotify-cover__play" id="spotifyPlayBtn" onclick="toggleSongPlay()" style="cursor:pointer"><svg id="spotifyPlayIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
+        </div>
+        <p class="spotify-cover__footer">  💕</p>`;
+    }
+
+    function buildFlipbook() {
+      const el = document.getElementById('flipbook');
+      el.innerHTML = '';
+
+      // Page 0: Cover
+      const cover = document.createElement('div');
+      cover.className = 'flipbook-page spotify-cover';
+      cover.dataset.idx = '0';
+      cover.innerHTML = buildSpotifyCover();
+      el.appendChild(cover);
+
+      // Pages 1–6: Inner pages
+      flipbookPages.forEach((p, i) => {
+        const page = document.createElement('div');
+        page.dataset.idx = String(i + 1);
+        if (p.type === 'koi') {
+          page.className = 'flipbook-page';
+          page.innerHTML = `<div class="koi-page">
+            <div class="koi-love-text">I love you &nbsp;I love you &nbsp;I lov<br>I love you &nbsp;I love you<br>I love you &nbsp;I love you &nbsp;I love<br>I love you &nbsp;I love you &nbsp;I love<br>I love you &nbsp;I love you<br>I love you &nbsp;I love you</div>
+            <div class="koi-title-block"><span class="koi-title-koi">KOI <span class="koi-title-aur">और</span></span><span class="koi-title-dooja">Dooja</span></div>
+            <div class="koi-films-row">
+              <div class="koi-film left">
+                <span class="koi-film-label">27 ▶ 12</span>
+                <img id="koiPhoto1" class="koi-film-photo" src="" alt="" style="display:none" onclick="triggerKoiUpload('koiUpload1')"/>
+                <div class="koi-film-placeholder" id="koiPh1" onclick="triggerKoiUpload('koiUpload1')">
+                  <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M3 8h2M19 8h2"/></svg>
+                  Tap to add<br>your photo
+                </div>
+                <input type="file" class="koi-upload-input" id="koiUpload1" accept="image/*" onchange="loadKoiPhoto(this,'koiPhoto1','koiPh1')"/>
+              </div>
+              <div class="koi-film right">
+                <span class="koi-film-label">27A ▶ TRA 400</span>
+                <img id="koiPhoto2" class="koi-film-photo" src="" alt="" style="display:none" onclick="triggerKoiUpload('koiUpload2')"/>
+                <div class="koi-film-placeholder" id="koiPh2" onclick="triggerKoiUpload('koiUpload2')">
+                  <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M3 8h2M19 8h2"/></svg>
+                  Tap to add<br>your photo
+                </div>
+                <input type="file" class="koi-upload-input" id="koiUpload2" accept="image/*" onchange="loadKoiPhoto(this,'koiPhoto2','koiPh2')"/>
+              </div>
+            </div>
+            <div class="koi-bottom-block"><div class="koi-kyun">Kyun</div><div class="koi-mujhe">MUJHE</div></div>
+            <div class="koi-rose-accent">
+              <svg class="koi-rose-svg" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
+                <path d="M100 220 Q95 160 110 130" stroke="#2d6a2d" stroke-width="4" fill="none"/>
+                <path d="M110 170 Q130 155 120 140 Q105 155 110 170Z" fill="#2d6a2d"/>
+                <circle cx="108" cy="118" r="34" fill="#c0392b"/><circle cx="108" cy="108" r="26" fill="#d9534f"/>
+                <circle cx="100" cy="120" r="22" fill="#c0392b"/><circle cx="116" cy="115" r="20" fill="#e74c3c"/>
+                <circle cx="106" cy="100" r="20" fill="#d9534f"/><circle cx="95"  cy="118" r="18" fill="#c0392b"/>
+                <circle cx="108" cy="112" r="13" fill="#a93226"/><circle cx="108" cy="110" r="7" fill="#922b21"/>
+              </svg>
+            </div>
+           
+          </div>`;
+        } else if (p.type === 'letter') {
+          page.className = 'flipbook-page';
+          page.style.overflow = 'hidden';
+          page.innerHTML = `<div class="letter-page">
+            <div class="letter-header">
+              <div class="letter-chapter">Chapter One</div>
+              <div class="letter-heading">The Beginning</div>
+              <div class="letter-date">24th February 2026</div>
+            </div>
+            <div class="letter-divider"></div>
+            <div class="letter-body">
+              <p><span class="highlight">Dear Tanisha,</span></p>
+              <p>For you, it was probably just another day. You received a call from a company regarding a job application you had submitted on Naukri.com.</p>
+              <p>You quickly turned on the lights at home, gathered yourself, and spoke to HR with a little nervousness. Your confidence and capability impressed them so much that they scheduled your face-to-face interview for the very next day.</p>
+              <p>What you didn't know was that this simple phone call was also the beginning of a story that would eventually become very important to me.</p>
+              <p>And there is one small secret you probably never knew. Before you entered that meeting room, someone sitting near the bean bag area had already noticed you walking in.</p>
+              <p><span class="highlight">That someone was me.</span></p>
+            </div>
+          </div>`;
+        } else if (p.type === 'stamp') {
+          page.className = 'flipbook-page';
+          page.style.overflow = 'hidden';
+          page.innerHTML = `<div class="stamp-page">
+            <div class="stamp-top-text">
+              <span class="stamp-na">ना</span>
+              <span class="stamp-tere-siwa">Tere Siwa</span>
+            </div>
+            <div class="stamp-vinyl"></div>
+            <div class="stamp-frame-wrap">
+              <div class="stamp-frame">
+                <div class="stamp-photo-wrap">
+                  <img id="stampPhoto" class="stamp-photo" src="" alt="" style="display:none" onclick="triggerStampUpload()"/>
+                  <div class="stamp-placeholder" id="stampPh" onclick="triggerStampUpload()">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M3 8h2M19 8h2"/></svg>
+                    Tap to add your photo
+                  </div>
+                  <input type="file" class="stamp-upload" id="stampUpload" accept="image/*" onchange="loadStampPhoto(this)"/>
+                </div>
+              </div>
+            </div>
+            <div class="stamp-bottom-text">
+              <div class="stamp-chahiye">CHAHIYE</div>
+            </div>
+            
+          </div>`;
+        } else if (p.type === 'impression') {
+          page.className = 'flipbook-page';
+          page.style.overflow = 'hidden';
+          page.innerHTML = `<div class="impression-page">
+            <div class="letter-header">
+              <div class="letter-chapter">Chapter Two</div>
+              <div class="letter-heading">My First Impression</div>
+            </div>
+            <div class="letter-divider"></div>
+            <div class="letter-body">
+              <p>I have never been a believer in love at first sight. Even when I saw you for the first time, I didn't suddenly think, <span class="highlight">"This is the girl."</span></p>
+              <p>Honestly, my first impression was that you were confident, independent. But something felt different that day. I couldn't explain it.</p>
+              <p>It wasn't attraction. It wasn't love. It was simply a strange feeling that something about that day was special.</p>
+              <p>At that time I was already committed, so thinking about anyone else wasn't even a possibility for me.</p>
+              <p>Still, for some reason, <span class="highlight">you stayed in my mind.</span></p>
+            </div>
+          </div>`;
+        } else if (p.type === 'safar') {
+          page.className = 'flipbook-page';
+          page.style.overflow = 'hidden';
+          page.innerHTML = `<div class="safar-page">
+            <div class="safar-top">
+              <span class="safar-har">Har</span>
+              <span class="safar-safar">SAFAR</span>
+            </div>
+            <div class="safar-film-strip">
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <div class="safar-frame-wrap">
+              <div class="safar-doily">
+                <div class="safar-lace-border"></div>
+                <div class="safar-photo-inner" onclick="triggerSafarUpload()">
+                  <img id="safarPhoto" class="safar-photo" src="" alt="" style="display:none"/>
+                  <div class="safar-placeholder" id="safarPh">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M3 8h2M19 8h2"/></svg>
+                    Tap to add your photo
+                  </div>
+                </div>
+              </div>
+              <input type="file" class="safar-upload" id="safarUpload" accept="image/*" onchange="loadSafarPhoto(this)"/>
+              <div class="safar-ribbon">
+                <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="20" cy="20" r="8" fill="#8b0000"/>
+                  <path d="M20 12 Q10 8 8 16 Q12 20 20 20 Q12 20 8 24 Q10 32 20 28Z" fill="#a93226"/>
+                  <path d="M20 12 Q30 8 32 16 Q28 20 20 20 Q28 20 32 24 Q30 32 20 28Z" fill="#c0392b"/>
+                  <circle cx="20" cy="20" r="4" fill="#e74c3c"/>
+                </svg>
+              </div>
+            </div>
+            <div class="safar-bottom">
+              <span class="safar-main">Main</span>
+              <span class="safar-tujhe">तुझे</span>
+            </div>
+           
+          </div>`;
+        } else if (p.type === 'interview') {
+          page.className = 'flipbook-page';
+          page.style.overflow = 'hidden';
+          page.innerHTML = `<div class="interview-page">
+            <div class="letter-header">
+              <div class="letter-chapter">Chapter Three</div>
+              <div class="letter-heading">The Interview</div>
+            </div>
+            <div class="letter-divider"></div>
+            <div class="letter-body">
+              <p>Then came your interview day.</p>
+              <p>And yes, you were late. 😄</p>
+              <p>You met people in the office, including someone you didn't immediately recognize as the CEO.</p>
+              <p>The interview went well, and you cleared it successfully.</p>
+              <p>Then came your first day at work.</p>
+              <p>And somehow, you were late again. 😂</p>
+              <p>Everyone was introduced to you, and work officially began.</p>
+              <p>At that moment, I had absolutely no idea that one day you would become such an important part of my life.</p>
+              <p><span class="highlight">But sometimes the most important stories begin very quietly.</span></p>
+            </div>
+          </div>`;
+        } else if (p.type === 'rehnuma') {
+          page.className = 'flipbook-page';
+          page.style.overflow = 'hidden';
+          page.innerHTML = `<div class="rehnuma-page">
+            <div class="rehnuma-top">
+              <span class="rehnuma-tu-hi">tu hi</span><span class="rehnuma-script">Rehnuma</span>
+              <span class="rehnuma-chahiye">CHAHIYE</span>
+            </div>
+            <div class="rehnuma-photo-wrap" onclick="triggerRehnumaUpload()">
+              <img id="rehnumaPhoto" class="rehnuma-photo" src="" alt="" style="display:none"/>
+              <div class="rehnuma-placeholder" id="rehnumaPh">
+                <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M3 8h2M19 8h2"/></svg>
+                Tap to add your photo
+              </div>
+            </div>
+            <input type="file" class="rehnuma-upload" id="rehnumaUpload" accept="image/*" onchange="loadRehnumaPhoto(this)"/>
+            <div class="rehnuma-petals">
+              <img src="flower.png" alt="flowers"/>
+            </div>
+            
+          </div>`;
+        } else if (p.type === 'knowing') {
+          page.className = 'flipbook-page';
+          page.style.overflow = 'hidden';
+          page.innerHTML = `<div class="knowing-page">
+            <div class="letter-header">
+              <div class="letter-chapter">Chapter Four</div>
+              <div class="letter-heading">Getting To Know You</div>
+            </div>
+            <div class="letter-divider"></div>
+            <div class="letter-body">
+              <p>One day during a meeting, you spoke about your college life. You talked about the departments you led, the responsibilities you handled, and the positions you held.</p>
+              <p>I remember sitting there and listening carefully. I was genuinely impressed. Not because of the titles. But because of the <span class="highlight">confidence, passion, and dedication</span> behind them.</p>
+              <p>Later, I invited everyone to my brother's wedding and especially told you that I would share the location. You couldn't attend.</p>
+              <p>But what stayed with me wasn't your absence. It was the fact that you personally messaged me later and asked how the wedding went.</p>
+              <p><span class="highlight">That simple gesture meant more than you probably realized.</span></p>
+            </div>
+          </div>`;
+        } else if (p.type === 'jeene') {
+          page.className = 'flipbook-page';
+          page.style.overflow = 'hidden';
+          page.innerHTML = `<div class="jeene-page">
+            <div class="jeene-top">
+              <span class="jeene-hindi">जीने</span>
+              <span class="jeene-ko">ko</span>
+            </div>
+            <div class="jeene-hearts">
+              <span>♥</span><span>♥</span><span>♥</span>
+              <span>♥</span><span>♥</span><span>♥</span>
+              <span>♥</span><span>♥</span><span>♥</span>
+            </div>
+            <div class="jeene-wash"></div>
+            <div class="jeene-branch">🌿</div>
+            <div class="jeene-film-wrap">
+              <div class="jeene-film">
+                <div class="jeene-slot" onclick="triggerJeeneUpload(0)">
+                  <img id="jeenePhoto0" src="" alt="" style="display:none"/>
+                  <div class="jeene-ph" id="jeenePh0"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3"/></svg>add photo</div>
+                </div>
+                <div class="jeene-slot" onclick="triggerJeeneUpload(1)">
+                  <img id="jeenePhoto1" src="" alt="" style="display:none"/>
+                  <div class="jeene-ph" id="jeenePh1"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3"/></svg>add photo</div>
+                </div>
+                <div class="jeene-slot" onclick="triggerJeeneUpload(2)">
+                  <img id="jeenePhoto2" src="" alt="" style="display:none"/>
+                  <div class="jeene-ph" id="jeenePh2"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3"/></svg>add photo</div>
+                </div>
+              </div>
+            </div>
+            <input type="file" class="jeene-upload" id="jeeneUpload0" accept="image/*" onchange="loadJeenePhoto(this,0)"/>
+            <input type="file" class="jeene-upload" id="jeeneUpload1" accept="image/*" onchange="loadJeenePhoto(this,1)"/>
+            <input type="file" class="jeene-upload" id="jeeneUpload2" accept="image/*" onchange="loadJeenePhoto(this,2)"/>
+            <div class="jeene-bottom">
+              <span class="jeene-bas">bas</span>
+              <span class="jeene-mujhe">मुझे</span>
+            </div>
+            
+          </div>`;
+        } else if (p.type === 'friendship') {
+          page.className = 'flipbook-page';
+          page.style.overflow = 'hidden';
+          page.innerHTML = `<div class="friendship-page">
+            <div class="letter-header">
+              <div class="letter-chapter">Chapter Five</div>
+              <div class="letter-heading">A Growing Friendship</div>
+            </div>
+            <div class="letter-divider"></div>
+            <div class="letter-body">
+              <p>As time passed, we started talking more. One day we discovered something funny — we shared the <span class="highlight">same birth date and even the same birth month.</span></p>
+              <p>Then came your message on 11th March. From there, conversations became easier.</p>
+              <p>Soon we started working together on projects, especially the Our Team page on the HA website. For the first time, I realized how naturally our conversations flowed.</p>
+              <p>There was no effort. No pretending. No awkwardness. <span class="highlight">Just comfort.</span></p>
+              <p>And before I knew it, our friendship had become one of my favorite parts of every day.</p>
+            </div>
+          </div>`;
+        } else if (p.type === 'mehrban') {
+          page.className = 'flipbook-page';
+          page.style.overflow = 'hidden';
+          page.innerHTML = `<div class="mehrban-page">
+            <div class="mehrban-torn-top"></div>
+            <div class="mehrban-hearts"><span>♥</span><span>♥</span><span>♥</span></div>
+            <div class="mehrban-brush"></div>
+            <div class="mehrban-photos">
+              <div class="mehrban-polaroid" onclick="triggerMehrbanUpload(0)">
+                <img id="mehrbanPhoto0" class="mehrban-pol-photo" src="" alt="" style="display:none"/>
+                <div class="mehrban-pol-ph" id="mehrbanPh0">
+                  <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
+                  add photo
+                </div>
+              </div>
+              <div class="mehrban-polaroid" onclick="triggerMehrbanUpload(1)">
+                <img id="mehrbanPhoto1" class="mehrban-pol-photo" src="" alt="" style="display:none"/>
+                <div class="mehrban-pol-ph" id="mehrbanPh1">
+                  <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
+                  add photo
+                </div>
+              </div>
+            </div>
+            <input type="file" class="mehrban-upload" id="mehrbanUpload0" accept="image/*" onchange="loadMehrbanPhoto(this,0)"/>
+            <input type="file" class="mehrban-upload" id="mehrbanUpload1" accept="image/*" onchange="loadMehrbanPhoto(this,1)"/>
+            <div class="mehrban-text">
+              <div class="mehrban-tu-hi">Tu hi</div>
+              <div class="mehrban-hindi">मेहरबान</div>
+              <div class="mehrban-chahiye">chahiye</div>
+            </div>
+            <div class="mehrban-torn-bottom"></div>
+            
+            
+          </div>`;
+        } else if (p.type === 'coffee') {
+          page.className = 'flipbook-page';
+          page.style.overflow = 'hidden';
+          page.innerHTML = `<div class="coffee-page">
+            <div class="letter-header">
+              <div class="letter-chapter">Chapter Six</div>
+              <div class="letter-heading">Coffee Conversations</div>
+            </div>
+            <div class="letter-divider"></div>
+            <div class="letter-body">
+              <p>Then came the cold coffee outing. We went together and talked about office.</p>
+              <p>You told me about your boyfriend and your relationship. I shared details about mine as well. We even showed each other pictures.</p>
+              <p>At that time, I genuinely believed we were simply <span class="highlight">good friends. Nothing more. Nothing less.</span></p>
+              <p>But life has a strange way of changing plans without asking for permission.</p>
+              <p>And while we were busy calling it friendship, <span class="highlight">something much deeper was quietly growing.</span></p>
+            </div>
+          </div>`;
+        } else if (p.type === 'sad') {
+          page.className = 'flipbook-page';
+          page.style.overflow = 'hidden';
+          page.innerHTML = `<div class="sad-page">
+            <div class="letter-header">
+              <div class="letter-chapter">Chapter Seven</div>
+              <div class="letter-heading">The Day You Were Sad</div>
+            </div>
+            <div class="letter-divider"></div>
+            <div class="letter-body">
+              <p>One day I noticed that something was wrong. You looked unusually quiet and upset. I asked what had happened. You didn't tell me.</p>
+              <p>Later, I learned from someone else that your relationship had ended.</p>
+              <p>Honestly, what hurt me wasn't the news itself. What hurt me was that <span class="highlight">you were carrying that pain alone.</span></p>
+              <p>I wasn't expecting you to share everything with me. But I wished I could have been there for you. Even if I couldn't solve anything.</p>
+              <p><span class="highlight">At least I could have sat beside you and shared the silence.</span></p>
+            </div>
+          </div>`;
+        } else if (p.type === 'changed') {
+          page.className = 'flipbook-page';
+          page.style.overflow = 'hidden';
+          page.innerHTML = `<div class="ruled-page">
+            <div class="letter-header">
+              <div class="letter-chapter">Chapter Eight</div>
+              <div class="letter-heading">The Day Everything Changed</div>
+            </div>
+            <div class="letter-divider"></div>
+            <div class="letter-body">
+              <p>Around the same time, my own life was becoming difficult. My relationship had been struggling for a long time. Then the thing I feared most finally happened. I was cheated on. Eventually, that relationship ended too.</p>
+              <p>Not long after, there was a difficult day at work when you were deeply hurt and emotional. <span class="highlight">I saw tears in your eyes.</span></p>
+              <p>And something inside me changed. It wasn't sympathy. It wasn't pity. It felt personal. As if someone I truly cared about was hurting.</p>
+              <p><span class="highlight">That was the day I realized that you had become much more than a friend to me.</span></p>
+            </div>
+          </div>`;
+        } else if (p.type === 'realization') {
+          page.className = 'flipbook-page';
+          page.style.overflow = 'hidden';
+          page.innerHTML = `<div class="ruled-page">
+            <div class="letter-header">
+              <div class="letter-chapter">Chapter Nine</div>
+              <div class="letter-heading">The Realization</div>
+            </div>
+            <div class="letter-divider"></div>
+            <div class="letter-body">
+              <p>From that day onward, everything started making sense. Your happiness began affecting my happiness. Your smile could brighten my day. Your sadness could ruin it.</p>
+              <p>I found myself looking forward to every conversation. Every meeting. Every random message. <span class="highlight">Every moment we spent together.</span></p>
+              <p>And slowly, without even realizing it, I stopped imagining life as just my own journey. Somewhere along the way, my heart had started imagining you as part of it.</p>
+              <p>I kept telling everyone, <span class="highlight">"I'll tell you when the right time comes."</span></p>
+              <p>And today feels like that right time.</p>
+            </div>
+          </div>`;
+        } else if (p.type === 'heart1') {
+          page.className = 'flipbook-page';
+          page.style.overflow = 'hidden';
+          page.innerHTML = `<div class="heart-page">
+            <div class="heart-confetti">
+              <span>♥</span><span>♥</span><span>♥</span><span>♥</span><span>♥</span>
+            </div>
+            <div class="letter-header">
+              <div class="letter-chapter">Chapter Ten</div>
+              <div class="letter-heading">What My Heart Wants To Say</div>
+            </div>
+            <div class="letter-divider"></div>
+            <div class="letter-body">
+              <p><span class="highlight">Tanisha,</span></p>
+              <p>Ho gaya hai mujhe kuch toh aapke saath. Aur bas itna hi bolunga ki yaar, <span class="highlight">main tumhare saath poori zindagi bitana chahta hoon.</span></p>
+              <p>Mujhe tumhare saath rehna hai. Sirf acche waqt mein nahi, bure waqt mein bhi. Main tumhare saath hasna chahta hoon. Tumhare saath rona chahta hoon.</p>
+              <p>Main tumhare saath apni saari khushiyan baantna chahta hoon. Apne saare dard baantna chahta hoon. Main tumhe samajhna chahta hoon. Tumhe jaanna chahta hoon.</p>
+              <p><span class="highlight">Chahta hoon main bas tumko.</span></p>
+              <p>Inkaar ka darr toh hai, phir bhi izhaar kar raha hoon...</p>
+              <p>Sach toh yeh hai... <span class="highlight">Ki main tumse be-inteha pyaar karta hoon.</span></p>
+            </div>
+          </div>`;
+        } else if (p.type === 'heart2') {
+          page.className = 'flipbook-page';
+          page.style.overflow = 'hidden';
+          page.innerHTML = `<div class="heart-page">
+            <div class="heart-confetti">
+              <span>♥</span><span>♥</span><span>♥</span><span>♥</span><span>♥</span>
+            </div>
+            <div class="letter-header">
+              <div class="letter-chapter">Chapter Ten · continued</div>
+              <div class="letter-heading">What My Heart Wants To Say</div>
+            </div>
+            <div class="letter-divider"></div>
+            <div class="letter-body">
+              <p>Mujhe nahi pata kab tum meri aadat ban gayi. Kab meri muskaan tumhari muskaan se jud gayi. Kab meri duaon mein tumhara naam aane laga.</p>
+              <p>Par aaj itna zaroor pata hai...</p>
+              <p>Ki ishq, mohabbat, pyaar — jo bhi hai... <span class="highlight">Woh sirf aur sirf tumse hai.</span></p>
+              <p>Main kisi cheez ko khatam nahi karna chahta. Main bas tumhare saath ek nayi aur khoobsurat shuruaat karna chahta hoon.</p>
+            </div>
+            <div class="heart-final-line">I really love you. 💕</div>
+          </div>`;
+        } else if (p.type === 'iloveyou') {
+          page.className = 'flipbook-page';
+          page.style.overflow = 'hidden';
+          page.innerHTML = `<div class="iloveyou-page">
+            <div class="iloveyou-title">
+              <span class="iloveyou-i">i</span>
+              <span class="iloveyou-love">love</span>
+              <span class="iloveyou-you">you</span>
+            </div>
+            <div class="iloveyou-card-wrap">
+              <div class="iloveyou-card" onclick="triggerIloveyouUpload()">
+                <div class="iloveyou-ace-tl">
+                  <span class="ace-letter">A</span>
+                  <span class="ace-suit">♥</span>
+                </div>
+                <div class="iloveyou-photo" id="iloveyouPhotoWrap">
+                  <img id="iloveyouPhoto" src="" alt="" style="display:none"/>
+                  <div class="iloveyou-ph" id="iloveyouPh">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M3 8h2M19 8h2"/></svg>
+                    Tap to add your photo
+                  </div>
+                </div>
+                <div class="iloveyou-ace-br">
+                  <span class="ace-letter">A</span>
+                  <span class="ace-suit">♥</span>
+                </div>
+              </div>
+            </div>
+            <input type="file" class="iloveyou-upload" id="iloveyouUpload" accept="image/*" onchange="loadIloveyouPhoto(this)"/>
+           
+          </div>`;
+        } else {
+          page.className = 'flipbook-page flipbook-inner';
+          page.innerHTML = `<span class="page-emoji">${p.emoji}</span><h3>${p.title}</h3><p>${p.text}</p>`;
+        }
+        el.appendChild(page);
+      });
+
+      totalPages = flipbookPages.length + 1;
+      currentPage = 0;
+      isAnimating = false;
+      applyPageStates();
+      updateNav();
+    }
+
+    function applyPageStates() {
+      const pages = document.querySelectorAll('#flipbook .flipbook-page');
+      pages.forEach((p, i) => {
+        p.classList.remove('page-current', 'page-next-peek');
+        p.style.transform = '';
+        p.style.transition = '';
+        p.style.pointerEvents = 'none';
+        p.style.boxShadow = '';
+
+        if (i === currentPage) {
+          p.style.opacity = '1';
+          p.style.zIndex = '10';
+          p.style.pointerEvents = 'auto';
+          p.classList.add('page-current');
+        } else if (i === currentPage + 1) {
+          p.style.opacity = '';
+          p.style.zIndex = '5';
+          p.classList.add('page-next-peek');
+        } else {
+          p.style.opacity = '0';
+          p.style.zIndex = '1';
+        }
+      });
+    }
+
+    function goToNext() {
+      if (isAnimating || currentPage >= totalPages - 1) return;
+      isAnimating = true;
+
+      const pages = document.querySelectorAll('#flipbook .flipbook-page');
+      const cur = pages[currentPage];
+      const nxt = pages[currentPage + 1];
+
+      // Prepare next page: start rotated right, behind
+      nxt.style.transition = 'none';
+      nxt.style.opacity = '1';
+      nxt.style.zIndex = '5';
+      nxt.style.transform = 'rotateY(90deg)';
+      nxt.style.pointerEvents = 'none';
+      nxt.style.boxShadow = '0 20px 50px rgba(92,26,36,0.25)';
+      nxt.classList.remove('page-next-peek');
+      nxt.getBoundingClientRect(); // force reflow
+
+      // Animate current page out (flip to left)
+      cur.style.transition = 'transform 0.28s ease-in, opacity 0.28s ease-in';
+      cur.style.transform = 'rotateY(-90deg)';
+      cur.style.opacity = '0.5';
+
+      setTimeout(() => {
+        // Hide current
+        cur.style.transition = 'none';
+        cur.style.opacity = '0';
+        cur.style.zIndex = '1';
+        cur.style.transform = 'rotateY(-180deg)';
+        cur.classList.remove('page-current');
+
+        // Animate next page in
+        nxt.style.transition = 'transform 0.32s ease-out, opacity 0.32s ease-out';
+        nxt.style.transform = 'rotateY(0deg)';
+        nxt.style.opacity = '1';
+        nxt.style.zIndex = '10';
+        nxt.classList.add('page-current');
+
+        setTimeout(() => {
+          currentPage++;
+          isAnimating = false;
+          // Apply peek to the page after next
+          const pages2 = document.querySelectorAll('#flipbook .flipbook-page');
+          pages2.forEach((p, i) => {
+            p.classList.remove('page-next-peek');
+            if (i === currentPage + 1) {
+              p.style.transition = 'none';
+              p.style.opacity = '0.6';
+              p.style.zIndex = '5';
+              p.style.transform = 'rotateY(8deg) scale(0.97) translateX(5px)';
+              p.classList.add('page-next-peek');
+            }
+          });
+          updateNav();
+          playTone('2');
+        }, 320);
+      }, 260);
+    }
+
+    function goToPrev() {
+      if (isAnimating || currentPage <= 0) return;
+      isAnimating = true;
+
+      const pages = document.querySelectorAll('#flipbook .flipbook-page');
+      const cur = pages[currentPage];
+      const prv = pages[currentPage - 1];
+
+      // Prepare prev page: start rotated left, behind
+      prv.style.transition = 'none';
+      prv.style.opacity = '1';
+      prv.style.zIndex = '5';
+      prv.style.transform = 'rotateY(-90deg)';
+      prv.style.pointerEvents = 'none';
+      prv.style.boxShadow = '0 20px 50px rgba(92,26,36,0.25)';
+      prv.classList.remove('page-current');
+      prv.getBoundingClientRect();
+
+      // Animate current out (flip to right)
+      cur.style.transition = 'transform 0.28s ease-in, opacity 0.28s ease-in';
+      cur.style.transform = 'rotateY(90deg)';
+      cur.style.opacity = '0.5';
+
+      setTimeout(() => {
+        cur.style.transition = 'none';
+        cur.style.opacity = '0';
+        cur.style.zIndex = '1';
+        cur.style.transform = 'rotateY(180deg)';
+        cur.classList.remove('page-current');
+
+        prv.style.transition = 'transform 0.32s ease-out, opacity 0.32s ease-out';
+        prv.style.transform = 'rotateY(0deg)';
+        prv.style.opacity = '1';
+        prv.style.zIndex = '10';
+        prv.classList.add('page-current');
+
+        setTimeout(() => {
+          currentPage--;
+          isAnimating = false;
+          // Peek at next
+          const pages2 = document.querySelectorAll('#flipbook .flipbook-page');
+          pages2.forEach((p, i) => {
+            p.classList.remove('page-next-peek');
+            if (i === currentPage + 1) {
+              p.style.transition = 'none';
+              p.style.opacity = '0.6';
+              p.style.zIndex = '5';
+              p.style.transform = 'rotateY(8deg) scale(0.97) translateX(5px)';
+              p.classList.add('page-next-peek');
+            }
+          });
+          updateNav();
+          playTone('1');
+        }, 320);
+      }, 260);
+    }
+
+    function updateNav() {
+      const prevBtn = document.getElementById('flipPrevBtn');
+      const nextBtn = document.getElementById('flipNextBtn');
+      const indicator = document.getElementById('flipPageIndicator');
+      prevBtn.disabled = currentPage === 0;
+      nextBtn.disabled = currentPage >= totalPages - 1;
+      nextBtn.textContent = currentPage === 0 ? 'Open book →' : (currentPage >= totalPages - 1 ? '— The End —' : 'Next page →');
+      indicator.textContent = currentPage === 0 ? 'Cover' : `Page ${currentPage} / ${totalPages - 1}`;
+    }
+
+    document.getElementById('flipNextBtn').addEventListener('click', goToNext);
+    document.getElementById('flipPrevBtn').addEventListener('click', goToPrev);
+
+    // Build on load (hidden, ready for when unlocked)
+    buildFlipbook();
+
+    // ===== PASSCODE =====
+    function updateSlots() {
+      document.querySelectorAll('.input-slot').forEach((slot, i) => {
+        if (i < enteredPasscode.length) {
+          slot.innerText = '*';
+          slot.classList.add('border-pink-500', 'bg-pink-50', 'scale-105');
+          slot.classList.remove('border-gray-800', 'bg-white');
+        } else {
+          slot.innerText = '';
+          slot.classList.remove('border-pink-500', 'bg-pink-50', 'scale-105');
+          slot.classList.add('border-gray-800', 'bg-white');
+        }
+      });
+    }
+
+    function verifyPasscode() {
+      if (enteredPasscode === appConfig.passcode) {
+        setTimeout(unlock, 300);
+      } else {
+        playError();
+        const display = document.getElementById('passcodeDisplay');
+        display.classList.add('animate-shake');
+        document.querySelectorAll('.input-slot').forEach(s => s.classList.add('border-rose-600', 'text-rose-600'));
+        setTimeout(() => {
+          display.classList.remove('animate-shake');
+          enteredPasscode = '';
+          updateSlots();
+          document.querySelectorAll('.input-slot').forEach(s => s.classList.remove('border-rose-600', 'text-rose-600'));
+        }, 600);
+      }
+    }
+
+    function appendDigit(d) {
+      if (enteredPasscode.length < maxPasscodeLength) {
+        enteredPasscode += d;
+        playTone(d);
+        updateSlots();
+        if (enteredPasscode.length === maxPasscodeLength) setTimeout(verifyPasscode, 150);
+      }
+    }
+
+    function clearLast() {
+      if (enteredPasscode.length > 0) { enteredPasscode = enteredPasscode.slice(0,-1); playTone('#'); updateSlots(); }
+    }
+
+    document.querySelectorAll('.keypad-btn').forEach(btn => btn.addEventListener('click', () => appendDigit(btn.getAttribute('data-value'))));
+    document.getElementById('clearBtn').addEventListener('click', clearLast);
+    document.addEventListener('keydown', e => {
+      if (['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
+      if (e.key >= '0' && e.key <= '9') appendDigit(e.key);
+      else if (e.key === '*' || e.key === '#') appendDigit(e.key);
+      else if (e.key === 'Backspace') clearLast();
+    });
+
+    // ===== SNOOPY =====
+    function spawnHeart(ox, oy) {
+      const h = document.createElement('div');
+      h.className = 'floating-heart text-2xl';
+      h.innerText = ['❤️','💖','🌸','✨','💕','🌷'][Math.floor(Math.random()*6)];
+      h.style.left = `${ox + Math.random()*40-20}px`;
+      h.style.top = `${oy + Math.random()*40-20}px`;
+      document.body.appendChild(h);
+      setTimeout(() => h.remove(), 1200);
+    }
+
+    document.getElementById('snoopyContainer').addEventListener('click', () => {
+      const sc = document.getElementById('snoopyContainer');
+      sc.classList.add('rotate-3');
+      setTimeout(() => sc.classList.remove('rotate-3'), 300);
+      playTone('8');
+      const r = document.getElementById('flowerHeartAnchor').getBoundingClientRect();
+      for (let i = 0; i < 5; i++) setTimeout(() => spawnHeart(r.left + window.scrollX, r.top + window.scrollY), i*100);
+    });
+
+    // ===== TRANSITIONS =====
+    function unlock() {
+      document.getElementById('congratsTitle').innerText = appConfig.celebrationHeader;
+      buildFlipbook();
+
+      const lock = document.getElementById('lockScreenView');
+      const view = document.getElementById('unlockedView');
+      lock.classList.add('opacity-0', 'scale-95');
+      setTimeout(() => {
+        lock.classList.add('hidden');
+        view.classList.remove('hidden');
+        view.classList.add('flex');
+        startCelebration();
+        showToast("Your flipbook is ready!", "📖");
+      }, 300);
+    }
+
+    function lockScreen() {
+      enteredPasscode = '';
+      updateSlots();
+
+      const lock = document.getElementById('lockScreenView');
+      const view = document.getElementById('unlockedView');
+      view.classList.add('opacity-0', 'scale-95');
+      setTimeout(() => {
+        view.classList.add('hidden');
+        view.classList.remove('flex');
+        lock.classList.remove('hidden', 'opacity-0', 'scale-95');
+        lock.classList.add('opacity-100', 'scale-100');
+        showToast("Screen locked.", "🔒");
+      }, 300);
+    }
+
+    document.getElementById('relockBtn').addEventListener('click', lockScreen);
+
+    // ===== SETTINGS =====
+    document.getElementById('settingsBtn').addEventListener('click', () => {
+      document.getElementById('newPasscodeInput').value = appConfig.passcode;
+      document.getElementById('celebrationHeaderInput').value = appConfig.celebrationHeader;
+      document.getElementById('toggleHintCheckbox').checked = appConfig.showHint;
+      const modal = document.getElementById('settingsModal');
+      modal.classList.remove('hidden');
+      setTimeout(() => { document.getElementById('settingsContent').classList.remove('scale-95'); document.getElementById('settingsContent').classList.add('scale-100'); }, 50);
+    });
+
+    function closeSettings() {
+      document.getElementById('settingsContent').classList.remove('scale-100');
+      document.getElementById('settingsContent').classList.add('scale-95');
+      setTimeout(() => document.getElementById('settingsModal').classList.add('hidden'), 150);
+    }
+
+    document.getElementById('closeSettings').addEventListener('click', closeSettings);
+    document.getElementById('settingsModal').addEventListener('click', e => { if (e.target === document.getElementById('settingsModal')) closeSettings(); });
+
+    document.getElementById('saveSettingsBtn').addEventListener('click', () => {
+      const code = document.getElementById('newPasscodeInput').value.trim();
+      const header = document.getElementById('celebrationHeaderInput').value.trim();
+      if (code.length < 4) { showToast("Passcode must be 4 digits", "⚠️"); return; }
+      appConfig.passcode = code;
+      appConfig.celebrationHeader = header || 'Access Granted, My Love!';
+      appConfig.showHint = document.getElementById('toggleHintCheckbox').checked;
+      document.getElementById('hintCodeDisplay').innerText = code;
+      document.getElementById('hintText').classList.toggle('hidden', !appConfig.showHint);
+      closeSettings();
+      showToast("Saved!", "💾");
+    });
+
+    // ===== KOI PAGE PHOTO UPLOAD =====
+    function triggerKoiUpload(inputId) { document.getElementById(inputId).click(); }
+    function loadKoiPhoto(input, imgId, phId) {
+      const file = input.files[0]; if (!file) return;
+      const url = URL.createObjectURL(file);
+      const img = document.getElementById(imgId);
+      const ph  = document.getElementById(phId);
+      img.src = url; img.style.display = 'block'; ph.style.display = 'none';
+    }
+
+    // ===== I LOVE YOU PAGE PHOTO UPLOAD =====
+    function triggerIloveyouUpload() { document.getElementById('iloveyouUpload').click(); }
+    function loadIloveyouPhoto(input) {
+      const file = input.files[0]; if (!file) return;
+      const url = URL.createObjectURL(file);
+      document.getElementById('iloveyouPhoto').src = url;
+      document.getElementById('iloveyouPhoto').style.display = 'block';
+      document.getElementById('iloveyouPh').style.display = 'none';
+    }
+
+    // ===== MEHRBAN PAGE PHOTO UPLOAD =====
+    function triggerMehrbanUpload(idx) { document.getElementById('mehrbanUpload' + idx).click(); }
+    function loadMehrbanPhoto(input, idx) {
+      const file = input.files[0]; if (!file) return;
+      const url = URL.createObjectURL(file);
+      document.getElementById('mehrbanPhoto' + idx).src = url;
+      document.getElementById('mehrbanPhoto' + idx).style.display = 'block';
+      document.getElementById('mehrbanPh' + idx).style.display = 'none';
+    }
+
+    // ===== JEENE PAGE PHOTO UPLOAD =====
+    function triggerJeeneUpload(idx) { document.getElementById('jeeneUpload' + idx).click(); }
+    function loadJeenePhoto(input, idx) {
+      const file = input.files[0]; if (!file) return;
+      const url = URL.createObjectURL(file);
+      document.getElementById('jeenePhoto' + idx).src = url;
+      document.getElementById('jeenePhoto' + idx).style.display = 'block';
+      document.getElementById('jeenePh' + idx).style.display = 'none';
+    }
+
+    // ===== REHNUMA PAGE PHOTO UPLOAD =====
+    function triggerRehnumaUpload() { document.getElementById('rehnumaUpload').click(); }
+    function loadRehnumaPhoto(input) {
+      const file = input.files[0]; if (!file) return;
+      const url = URL.createObjectURL(file);
+      document.getElementById('rehnumaPhoto').src = url;
+      document.getElementById('rehnumaPhoto').style.display = 'block';
+      document.getElementById('rehnumaPh').style.display = 'none';
+    }
+
+    // ===== SAFAR PAGE PHOTO UPLOAD =====
+    function triggerSafarUpload() { document.getElementById('safarUpload').click(); }
+    function loadSafarPhoto(input) {
+      const file = input.files[0]; if (!file) return;
+      const url = URL.createObjectURL(file);
+      document.getElementById('safarPhoto').src = url;
+      document.getElementById('safarPhoto').style.display = 'block';
+      document.getElementById('safarPh').style.display = 'none';
+    }
+
+    // ===== STAMP PAGE PHOTO UPLOAD =====
+    function triggerStampUpload() { document.getElementById('stampUpload').click(); }
+    function loadStampPhoto(input) {
+      const file = input.files[0]; if (!file) return;
+      const url = URL.createObjectURL(file);
+      document.getElementById('stampPhoto').src = url;
+      document.getElementById('stampPhoto').style.display = 'block';
+      document.getElementById('stampPh').style.display = 'none';
+    }
+
+    // ===== SONG PLAYER =====
+    const songAudio = new Audio('1781078163311711.m4a');
+    songAudio.loop = true;
+
+    function fmtTime(s) {
+      const m = Math.floor(s / 60);
+      return m + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+    }
+    songAudio.addEventListener('timeupdate', () => {
+      const cur = document.getElementById('songCurrentTime');
+      const fill = document.getElementById('songProgressFill');
+      if (cur) cur.textContent = fmtTime(songAudio.currentTime);
+      if (fill && songAudio.duration) fill.style.width = (songAudio.currentTime / songAudio.duration * 100) + '%';
+    });
+    songAudio.addEventListener('loadedmetadata', () => {
+      const dur = document.getElementById('songDuration');
+      if (dur) dur.textContent = fmtTime(songAudio.duration);
+    });
+
+    function toggleSongPlay() {
+      if (songAudio.paused) {
+        songAudio.play();
+        const icon = document.getElementById('spotifyPlayIcon');
+        if (icon) icon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+      } else {
+        songAudio.pause();
+        const icon = document.getElementById('spotifyPlayIcon');
+        if (icon) icon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+      }
+    }
+
+    function pauseSongIfPlaying() {
+      if (!songAudio.paused) {
+        songAudio.pause();
+        const icon = document.getElementById('spotifyPlayIcon');
+        if (icon) icon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+      }
+    }
+
+    // ===== MUTE =====
+    document.getElementById('muteBtn').addEventListener('click', () => {
+      appConfig.soundMuted = !appConfig.soundMuted;
+      const btn = document.getElementById('muteBtn');
+      const icon = document.getElementById('volumeIcon');
+      if (appConfig.soundMuted) {
+        icon.innerHTML = `<path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.69-3.69a1 1 0 011.107-.234zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clip-rule="evenodd"/>`;
+        btn.classList.add('bg-gray-100','text-gray-400'); btn.classList.remove('bg-pink-50','text-pink-600');
+        showToast("Muted", "🔇");
+      } else {
+        icon.innerHTML = `<path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.69-3.69a1 1 0 011.107-.234zM11 10a3 3 0 01-3 3H7.828l-1.764 1.764A5 5 0 0013 10V4.34a1 1 0 10-2 0V10z" clip-rule="evenodd"/>`;
+        btn.classList.remove('bg-gray-100','text-gray-400'); btn.classList.add('bg-pink-50','text-pink-600');
+        showToast("Sound on", "🔊");
+        initAudio();
+      }
+    });
+  </script>
+</body>
+</html>
