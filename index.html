@@ -7,7 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Dancing+Script:wght@500;600;700&family=Abril+Fatface&family=Caveat:wght@400;600&family=Noto+Sans+Devanagari:wght@400;700;900&family=Playfair+Display:ital,wght@0,700;0,900;1,400&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Quicksand', sans-serif; background: #fcfbf9; user-select: none; }
+    body { font-family: 'Quicksand', sans-serif; background: #fcfbf9; user-select: none; height: 100dvh; display: flex; flex-direction: column; }
 
     @keyframes heartbeat {
       0% { transform: scale(1); } 14% { transform: scale(1.1); }
@@ -39,6 +39,8 @@
       flex-direction: column;
       align-items: center;
       gap: 1.5rem;
+      flex: 1;
+      min-height: 0;
     }
 
     .flipbook {
@@ -46,6 +48,7 @@
       width: min(340px, 92vw);
       height: min(530px, 72vh);
       perspective: 1400px;
+      flex-shrink: 0;
     }
 
     .flipbook-page {
@@ -1320,6 +1323,76 @@
       }
     }
 
+    /* ── No-scroll fixed layout on mobile ── */
+    @media (max-width: 639px) {
+      html { height: 100%; }
+      body {
+        height: 100dvh !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+        padding: 4px !important;
+      }
+      header { margin-bottom: 0 !important; padding-top: 2px !important; padding-bottom: 2px !important; }
+      footer  { padding-top: 1px !important; padding-bottom: 1px !important; }
+
+      main {
+        min-height: 0 !important;
+        padding: 8px !important;
+        overflow: hidden;
+        justify-content: flex-start !important;
+      }
+
+      /* ── Lock screen: hide Snoopy on tiny screens, show only keypad ── */
+      #lockScreenView {
+        flex: 1 !important;
+        min-height: 0;
+        height: 100%;
+        overflow: hidden;
+      }
+      #lockScreenView > div:first-child { display: none !important; }
+      #lockScreenView > div:last-child { width: 100%; }
+
+      /* ── Unlocked flipbook view ── */
+      #unlockedView {
+        flex: 1 !important;
+        min-height: 0 !important;
+        justify-content: flex-start !important;
+        overflow: hidden !important;
+        gap: 2px !important;
+        padding-top: 2px !important;
+        padding-bottom: 0 !important;
+      }
+
+      #congratsTitle { font-size: 0.95rem !important; margin-bottom: 0 !important; line-height: 1.2 !important; }
+      .flipbook-hint { display: none !important; }
+
+      .flipbook-scene {
+        flex: 1 !important;
+        min-height: 0 !important;
+        gap: 6px !important;
+        width: 100%;
+      }
+
+      /* Flipbook: fixed height based on remaining viewport space */
+      .flipbook {
+        width: min(320px, 92vw) !important;
+        height: calc(100dvh - 175px) !important;
+        min-height: 300px !important;
+        max-height: 680px !important;
+        flex-shrink: 0 !important;
+      }
+
+      .flipbook-nav { flex-shrink: 0; }
+      .flipbook-page-indicator { min-width: 60px; }
+
+      #relockBtn {
+        flex-shrink: 0;
+        margin-top: 0 !important;
+        padding: 0.3rem 0.875rem !important;
+        font-size: 0.72rem !important;
+      }
+    }
+
     /* Fluid type for large decorative fonts inside flipbook pages */
     .koi-mujhe        { font-size: clamp(44px, 15.5vw, 58px); }
     .koi-kyun         { font-size: clamp(38px, 13.5vw, 50px); }
@@ -1369,7 +1442,7 @@
     </div>
   </header>
 
-  <main class="w-full max-w-5xl bg-white rounded-3xl shadow-xl shadow-pink-100/50 border border-pink-100 p-3 sm:p-6 md:p-10 flex-grow flex flex-col justify-center relative transition-all duration-500 overflow-hidden min-h-[550px]">
+  <main class="w-full max-w-5xl bg-white rounded-3xl shadow-xl shadow-pink-100/50 border border-pink-100 p-3 sm:p-6 md:p-10 flex-1 min-h-0 flex flex-col justify-center relative transition-all duration-500 overflow-hidden">
 
     <!-- LOCK SCREEN -->
     <div id="lockScreenView" class="w-full flex flex-col lg:flex-row items-center justify-center gap-4 sm:gap-8 lg:gap-16 transition-all duration-500">
@@ -1456,7 +1529,7 @@
     </div>
 
     <!-- FLIPBOOK VIEW -->
-    <div id="unlockedView" class="hidden w-full flex-col items-center justify-center text-center gap-4 py-2">
+    <div id="unlockedView" class="hidden w-full flex-1 min-h-0 flex-col items-center justify-center text-center gap-4 py-2">
       <h2 id="congratsTitle" class="text-2xl sm:text-3xl font-extrabold text-pink-600 tracking-tight mb-1">Access Granted, My Love!</h2>
       <p class="flipbook-hint mb-2">Turn the pages of our love story</p>
 
