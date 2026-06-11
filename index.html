@@ -129,6 +129,62 @@
     .spotify-cover__play svg { width: 24px; height: 24px; margin-left: 3px; color: #5c1a24; }
     .spotify-cover__footer { text-align: center; font-family: 'Dancing Script', cursive; font-size: 1.15rem; font-weight: 600; margin-top: 0.75rem; opacity: 0.95; letter-spacing: 0.02em; }
 
+    /* ── Scrollable text pages on mobile ── */
+    @media (max-width: 639px) {
+      /* Allow touch-scroll to pass through the flipbook wrapper to inner divs */
+      .flipbook-page.page-current {
+        overflow: hidden !important;
+        touch-action: pan-y !important;
+      }
+      #flipbook {
+        touch-action: pan-y !important;
+      }
+
+      .letter-page,
+      .impression-page,
+      .interview-page,
+      .knowing-page,
+      .friendship-page,
+      .coffee-page,
+      .sad-page,
+      .ruled-page,
+      .heart-page {
+        overflow-y: scroll !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        touch-action: pan-y !important;
+        overscroll-behavior: contain;
+        /* clip the rounded corners */
+        border-radius: 1.25rem;
+        scrollbar-width: thin;
+        scrollbar-color: #fbcfe8 transparent;
+      }
+      .letter-page::-webkit-scrollbar,
+      .impression-page::-webkit-scrollbar,
+      .interview-page::-webkit-scrollbar,
+      .knowing-page::-webkit-scrollbar,
+      .friendship-page::-webkit-scrollbar,
+      .coffee-page::-webkit-scrollbar,
+      .sad-page::-webkit-scrollbar,
+      .ruled-page::-webkit-scrollbar,
+      .heart-page::-webkit-scrollbar {
+        display: block !important;
+        width: 4px;
+      }
+      .letter-page::-webkit-scrollbar-thumb,
+      .impression-page::-webkit-scrollbar-thumb,
+      .interview-page::-webkit-scrollbar-thumb,
+      .knowing-page::-webkit-scrollbar-thumb,
+      .friendship-page::-webkit-scrollbar-thumb,
+      .coffee-page::-webkit-scrollbar-thumb,
+      .sad-page::-webkit-scrollbar-thumb,
+      .ruled-page::-webkit-scrollbar-thumb,
+      .heart-page::-webkit-scrollbar-thumb {
+        background: #fbcfe8;
+        border-radius: 99px;
+      }
+    }
+
     /* Spotify cover: compact on small screens so controls are never clipped */
     @media (max-width: 639px) {
       .spotify-cover {
@@ -1842,7 +1898,6 @@
           </div>`;
         } else if (p.type === 'letter') {
           page.className = 'flipbook-page';
-          page.style.overflow = 'hidden';
           page.innerHTML = `<div class="letter-page">
             <div class="letter-header">
               <div class="letter-chapter">Chapter One</div>
@@ -1861,7 +1916,6 @@
           </div>`;
         } else if (p.type === 'stamp') {
           page.className = 'flipbook-page';
-          page.style.overflow = 'hidden';
           page.innerHTML = `<div class="stamp-page">
             <div class="stamp-top-text">
               <span class="stamp-na">ना</span>
@@ -1887,7 +1941,6 @@
           </div>`;
         } else if (p.type === 'impression') {
           page.className = 'flipbook-page';
-          page.style.overflow = 'hidden';
           page.innerHTML = `<div class="impression-page">
             <div class="letter-header">
               <div class="letter-chapter">Chapter Two</div>
@@ -1904,7 +1957,6 @@
           </div>`;
         } else if (p.type === 'safar') {
           page.className = 'flipbook-page';
-          page.style.overflow = 'hidden';
           page.innerHTML = `<div class="safar-page">
             <div class="safar-top">
               <span class="safar-har">Har</span>
@@ -1942,7 +1994,6 @@
           </div>`;
         } else if (p.type === 'interview') {
           page.className = 'flipbook-page';
-          page.style.overflow = 'hidden';
           page.innerHTML = `<div class="interview-page">
             <div class="letter-header">
               <div class="letter-chapter">Chapter Three</div>
@@ -1963,7 +2014,6 @@
           </div>`;
         } else if (p.type === 'rehnuma') {
           page.className = 'flipbook-page';
-          page.style.overflow = 'hidden';
           page.innerHTML = `<div class="rehnuma-page">
             <div class="rehnuma-top">
               <span class="rehnuma-tu-hi">tu hi</span><span class="rehnuma-script">Rehnuma</span>
@@ -1984,7 +2034,6 @@
           </div>`;
         } else if (p.type === 'knowing') {
           page.className = 'flipbook-page';
-          page.style.overflow = 'hidden';
           page.innerHTML = `<div class="knowing-page">
             <div class="letter-header">
               <div class="letter-chapter">Chapter Four</div>
@@ -2001,7 +2050,6 @@
           </div>`;
         } else if (p.type === 'jeene') {
           page.className = 'flipbook-page';
-          page.style.overflow = 'hidden';
           page.innerHTML = `<div class="jeene-page">
             <div class="jeene-top">
               <span class="jeene-hindi">जीने</span>
@@ -2041,7 +2089,6 @@
           </div>`;
         } else if (p.type === 'friendship') {
           page.className = 'flipbook-page';
-          page.style.overflow = 'hidden';
           page.innerHTML = `<div class="friendship-page">
             <div class="letter-header">
               <div class="letter-chapter">Chapter Five</div>
@@ -2058,7 +2105,6 @@
           </div>`;
         } else if (p.type === 'mehrban') {
           page.className = 'flipbook-page';
-          page.style.overflow = 'hidden';
           page.innerHTML = `<div class="mehrban-page">
             <div class="mehrban-torn-top"></div>
             <div class="mehrban-hearts"><span>♥</span><span>♥</span><span>♥</span></div>
@@ -2092,7 +2138,6 @@
           </div>`;
         } else if (p.type === 'coffee') {
           page.className = 'flipbook-page';
-          page.style.overflow = 'hidden';
           page.innerHTML = `<div class="coffee-page">
             <div class="letter-header">
               <div class="letter-chapter">Chapter Six</div>
@@ -2109,7 +2154,6 @@
           </div>`;
         } else if (p.type === 'sad') {
           page.className = 'flipbook-page';
-          page.style.overflow = 'hidden';
           page.innerHTML = `<div class="sad-page">
             <div class="letter-header">
               <div class="letter-chapter">Chapter Seven</div>
@@ -2126,7 +2170,6 @@
           </div>`;
         } else if (p.type === 'changed') {
           page.className = 'flipbook-page';
-          page.style.overflow = 'hidden';
           page.innerHTML = `<div class="ruled-page">
             <div class="letter-header">
               <div class="letter-chapter">Chapter Eight</div>
@@ -2142,7 +2185,6 @@
           </div>`;
         } else if (p.type === 'realization') {
           page.className = 'flipbook-page';
-          page.style.overflow = 'hidden';
           page.innerHTML = `<div class="ruled-page">
             <div class="letter-header">
               <div class="letter-chapter">Chapter Nine</div>
@@ -2159,7 +2201,6 @@
           </div>`;
         } else if (p.type === 'heart1') {
           page.className = 'flipbook-page';
-          page.style.overflow = 'hidden';
           page.innerHTML = `<div class="heart-page">
             <div class="heart-confetti">
               <span>♥</span><span>♥</span><span>♥</span><span>♥</span><span>♥</span>
@@ -2181,7 +2222,6 @@
           </div>`;
         } else if (p.type === 'heart2') {
           page.className = 'flipbook-page';
-          page.style.overflow = 'hidden';
           page.innerHTML = `<div class="heart-page">
             <div class="heart-confetti">
               <span>♥</span><span>♥</span><span>♥</span><span>♥</span><span>♥</span>
@@ -2201,7 +2241,6 @@
           </div>`;
         } else if (p.type === 'iloveyou') {
           page.className = 'flipbook-page';
-          page.style.overflow = 'hidden';
           page.innerHTML = `<div class="iloveyou-page">
             <div class="iloveyou-title">
               <span class="iloveyou-i">i</span>
