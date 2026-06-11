@@ -129,6 +129,24 @@
     .spotify-cover__play svg { width: 24px; height: 24px; margin-left: 3px; color: #5c1a24; }
     .spotify-cover__footer { text-align: center; font-family: 'Dancing Script', cursive; font-size: 1.15rem; font-weight: 600; margin-top: 0.75rem; opacity: 0.95; letter-spacing: 0.02em; }
 
+    /* Spotify cover: compact on small screens so controls are never clipped */
+    @media (max-width: 639px) {
+      .spotify-cover {
+        padding: 0.75rem 0.9rem 0.9rem;
+        overflow: hidden;
+        justify-content: space-between;
+      }
+      .spotify-cover__art { aspect-ratio: 16/9; margin-bottom: 0.5rem; }
+      .spotify-cover__brand-row { margin-bottom: 0.35rem; }
+      .spotify-cover__meta { margin-bottom: 0.45rem; }
+      .spotify-cover__title { font-size: 1.05rem; }
+      .spotify-cover__times { margin-bottom: 0.45rem; }
+      .spotify-cover__play { width: 42px; height: 42px; }
+      .spotify-cover__play svg { width: 20px; height: 20px; }
+      .spotify-cover__controls svg { width: 18px; height: 18px; }
+      .spotify-cover__footer { margin-top: 0.4rem; font-size: 0.95rem; }
+    }
+
     /* Inner pages */
     .flipbook-inner {
       background: linear-gradient(145deg, #fff9fb 0%, #fce7f3 100%);
@@ -1342,14 +1360,25 @@
         justify-content: flex-start !important;
       }
 
-      /* ── Lock screen: hide Snoopy on tiny screens, show only keypad ── */
+      /* ── Lock screen: show Snoopy small above keypad ── */
       #lockScreenView {
         flex: 1 !important;
         min-height: 0;
         height: 100%;
         overflow: hidden;
       }
-      #lockScreenView > div:first-child { display: none !important; }
+      #lockScreenView > div:first-child {
+        display: flex !important;
+        width: 100% !important;
+        max-height: 140px !important;
+        overflow: hidden;
+        justify-content: center;
+      }
+      #lockScreenView > div:first-child svg {
+        max-width: 120px !important;
+        max-height: 120px !important;
+      }
+      #lockScreenView > div:first-child p { display: none !important; }
       #lockScreenView > div:last-child { width: 100%; }
 
       /* ── Unlocked flipbook view ── */
@@ -1776,7 +1805,7 @@
         if (p.type === 'koi') {
           page.className = 'flipbook-page';
           page.innerHTML = `<div class="koi-page">
-            <div class="koi-love-text">I love you &nbsp;I love you &nbsp;I lov<br>I love you &nbsp;I love you<br>I love you &nbsp;I love you &nbsp;I love<br>I love you &nbsp;I love you &nbsp;I love<br>I love you &nbsp;I love you<br>I love you &nbsp;I love you</div>
+            <div class="koi-love-text">I love you &nbsp;I love you &nbsp;I love<br>I love you &nbsp;I love you<br>I love you &nbsp;I love you &nbsp;I love<br>I love you &nbsp;I love you &nbsp;I love<br>I love you &nbsp;I love you<br>I love you &nbsp;I love you</div>
             <div class="koi-title-block"><span class="koi-title-koi">KOI <span class="koi-title-aur">और</span></span><span class="koi-title-dooja">Dooja</span></div>
             <div class="koi-films-row">
               <div class="koi-film left">
